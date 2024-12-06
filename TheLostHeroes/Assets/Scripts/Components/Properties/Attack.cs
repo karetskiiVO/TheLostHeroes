@@ -1,9 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
-public struct Pawn
+public struct Attack
 {
-
+    public int atk;
 }

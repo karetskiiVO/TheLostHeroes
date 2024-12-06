@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Leopotam.Ecs;
 using UnityEngine;
-using UnityEngine.AI;
 
-public struct PawnPathfinding
+public class Tile : MonoBehaviour
 {
-    public NavMeshAgent agent;
+    public int type;
 }

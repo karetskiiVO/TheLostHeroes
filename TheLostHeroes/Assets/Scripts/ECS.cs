@@ -17,10 +17,28 @@ public class ECS : MonoBehaviour
         RuntimeData runtimeData = new RuntimeData();
 
         systems
+            // Системы с основной логикой должны
+            // быть зарегистрированы здесь, порядок важен:
+            // .Add (new TestSystem1 ())
+            // .Add (new TestSystem2 ())
+
+            // OneFrame-компоненты должны быть зарегистрированы
+            // в общем списке систем, порядок важен:
+            // .OneFrame<TestComponent1> ()
+            // .OneFrame<TestComponent2> ()
+
+            // Инъекция должна быть произведена здесь,
+            // порядок не важен:
+            // .Inject (new CameraService ())
+            // .Inject (new NavMeshSupport ())
+
             .Add(new WorldInitSystem())
+            .Add(new WorldGenSystem())
+
             .Inject(configuration)
             .Inject(sceneData)
             .Inject(runtimeData)
+
             .Init();
     }
 

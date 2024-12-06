@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f52cc23451392c94dab4ceb48ba45163, type: 3}
   m_Name: Config
   m_EditorClassIdentifier: 
-  pawnPrefab: {fileID: 0}
+  pawnPrefab: {fileID: 8477544308936224630, guid: 231ef7736d500b04a8550a3c745bac06, type: 3}
+  TileTypes: []
