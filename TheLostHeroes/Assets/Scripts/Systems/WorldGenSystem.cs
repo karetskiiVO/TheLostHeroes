@@ -23,7 +23,7 @@ public struct WorldGenSystem : IEcsInitSystem {
             var mapDict = new Dictionary<Vector2Int, uint>();
             
             var diggers = new List<Digger>{
-                new Digger(mapDict, runtimeData.randomConfiguration)
+                new HallDigger(mapDict, runtimeData.randomConfiguration)
             };
 
             int numEpochs = 10;
@@ -40,7 +40,7 @@ public struct WorldGenSystem : IEcsInitSystem {
                         if ((dir + diggers[diggeridx].dir) % 2 == 0) continue;
                         if (!runtimeData.randomConfiguration.Binrary(spawnRate)) continue;
 
-                        diggers.Add(new Digger(mapDict, runtimeData.randomConfiguration, diggers[diggeridx].position, dir));
+                        diggers.Add(new HallDigger(mapDict, runtimeData.randomConfiguration, diggers[diggeridx].position, dir));
                     }
 
                     if (!runtimeData.randomConfiguration.Binrary(deathRate)) continue;
@@ -87,18 +87,29 @@ public struct WorldGenSystem : IEcsInitSystem {
         }
     }
 
-    private class Digger {
-        private static readonly Vector2Int[] directions = { Vector2Int.right, Vector2Int.up, Vector2Int.left, Vector2Int.down };
+    private abstract class Digger {
+        public static readonly Vector2Int[] directions = { Vector2Int.right, Vector2Int.up, Vector2Int.left, Vector2Int.down };
         
         public uint dir = 0;
         public Vector2Int position;
 
-        private bool alive = true;
+        protected bool alive = true;
         
-        private RandomConfiguration randomDevice = null;
-        private Dictionary<Vector2Int, uint> map;
+        protected RandomConfiguration randomDevice = null;
+        protected Dictionary<Vector2Int, uint> map;
 
-        public Digger (Dictionary<Vector2Int, uint> map, RandomConfiguration randomDevice, Vector2Int position = default, int dir = -1) {
+        public abstract bool Step ();
+
+        public bool Alive () {
+            return alive;
+        }
+        public void Kill () {
+            alive = false;
+        }
+    }
+
+    private class HallDigger : Digger {
+        public HallDigger (Dictionary<Vector2Int, uint> map, RandomConfiguration randomDevice, Vector2Int position = default, int dir = -1) {
             this.randomDevice = randomDevice;
 
             this.map = map;
@@ -110,7 +121,7 @@ public struct WorldGenSystem : IEcsInitSystem {
             this.position = position;
         }
 
-        public bool Step() {
+        public override bool Step () {
             if (!alive) return alive;
 
             var len = Convert.ToInt32(randomDevice.NextNormal(8, 1.5));
@@ -143,16 +154,11 @@ public struct WorldGenSystem : IEcsInitSystem {
 
             return alive;
         }
-
-        public bool Alive () {
-            return alive;
-        }
-        public void Kill () {
-            alive = false;
-        }
     }
 
-    private void TryToCreateRoom (Vector2Int position, Vector2Int direction) {
-
+    private class RoomDigger : Digger {
+        public override bool Step () {
+            throw new NotImplementedException();
+        }
     }
 }
