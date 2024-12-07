@@ -10,11 +10,15 @@ public class ECS : MonoBehaviour
     private EcsWorld ecsWorld;
     private EcsSystems systems;
 
+    [SerializeField]string seed;
+
     private void Start()
     {
         ecsWorld = new EcsWorld();
         systems = new EcsSystems(ecsWorld);
-        RuntimeData runtimeData = new RuntimeData();
+        RuntimeData runtimeData = new RuntimeData{
+            randomConfiguration = new RuntimeData.RandomConfiguration(seed)
+        };
 
         systems
             // Системы с основной логикой должны
