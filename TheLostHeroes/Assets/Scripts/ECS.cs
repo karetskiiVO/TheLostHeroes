@@ -17,7 +17,7 @@ public class ECS : MonoBehaviour
         ecsWorld = new EcsWorld();
         systems = new EcsSystems(ecsWorld);
         RuntimeData runtimeData = new RuntimeData{
-            randomConfiguration = new RuntimeData.RandomConfiguration(seed)
+            randomConfiguration = new RandomConfiguration(seed)
         };
 
         systems
