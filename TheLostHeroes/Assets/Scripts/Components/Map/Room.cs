@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using Leopotam.Ecs;
 using UnityEngine;
 
-public struct SpawnerRoom
-{
+public struct Spawner {
     //TODO:spawner properties
 }
 
-public struct Room
-{
+public struct Room {
     public List<EcsEntity> tiles;
 }
