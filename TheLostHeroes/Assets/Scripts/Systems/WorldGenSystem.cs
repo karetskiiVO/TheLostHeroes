@@ -20,10 +20,12 @@ public struct WorldGenSystem : IEcsInitSystem {
 
             /******************* Некоторые эксперименты на тему *******************/
 
-            var mapDict = new Dictionary<Vector2Int, uint>();
-            
+            var mapDict = new Dictionary<Vector2Int, uint> {
+                { Vector2Int.zero, 1 }
+            };
+
             var diggers = new List<Digger>{
-                new HallDigger(mapDict, runtimeData.randomConfiguration)
+                new HallDigger(mapDict, runtimeData.randomConfiguration, Vector2Int.zero, 0)
             };
 
             int numEpochs = 10;
@@ -32,15 +34,24 @@ public struct WorldGenSystem : IEcsInitSystem {
 
             for (var epoch = 0; epoch < numEpochs; epoch++) {
                 for (var diggeridx = 0; diggeridx < diggers.Count; diggeridx++) {
-                    diggers[diggeridx].Step();
-
+                    var prevdir = diggers[diggeridx].dir;
+                    var revprevdir = (prevdir + 2) % 4;
+                    var alive = diggers[diggeridx].Step();
+                    var currdir = diggers[diggeridx].dir;
+                    var currposition = diggers[diggeridx].position;
+                    
+                    if (!alive) continue;
                     for (var dir = 0; dir < 4; dir++) {
                         // добавить создание комнаты
                         
-                        if ((dir + diggers[diggeridx].dir) % 2 == 0) continue;
+                        if (dir == currdir) continue;
+                        if (dir == revprevdir) continue;
+
                         if (!runtimeData.randomConfiguration.Binrary(spawnRate)) continue;
 
-                        diggers.Add(new HallDigger(mapDict, runtimeData.randomConfiguration, diggers[diggeridx].position, dir));
+                        diggers.Add(
+                            new HallDigger(mapDict, runtimeData.randomConfiguration, currposition, (uint)dir)
+                        );
                     }
 
                     if (!runtimeData.randomConfiguration.Binrary(deathRate)) continue;
@@ -60,15 +71,15 @@ public struct WorldGenSystem : IEcsInitSystem {
                 ymax = Math.Max(ymax, elem.Key.y);
             }
 
-            var texture = new Texture2D(xmax - xmin + 1, ymax - ymin + 1);
+            var texture = new Texture2D(xmax - xmin + 1, ymax - ymin + 1) {
+                filterMode = FilterMode.Point
+            };
 
             foreach (var elem in mapDict) {
                 texture.SetPixel(elem.Key.x - xmin, elem.Key.y - ymin, Color.red);
                 //  elem.Value;
+                texture.Apply();
             }
-
-            texture.filterMode = FilterMode.Point;
-            texture.Apply();
     
             /************************** Эксперименты все **************************/
 
@@ -109,28 +120,25 @@ public struct WorldGenSystem : IEcsInitSystem {
     }
 
     private class HallDigger : Digger {
-        public HallDigger (Dictionary<Vector2Int, uint> map, RandomConfiguration randomDevice, Vector2Int position = default, int dir = -1) {
+        public HallDigger (Dictionary<Vector2Int, uint> map, RandomConfiguration randomDevice, Vector2Int position, uint dir) {
             this.randomDevice = randomDevice;
 
             this.map = map;
 
-            if (dir < 0 || dir > 4) {
-                dir = randomDevice.Next(4);
-            }
-            this.dir = (uint)dir;
+            this.dir = dir;
             this.position = position;
         }
 
         public override bool Step () {
             if (!alive) return alive;
 
+            if (!map.ContainsKey(position)) throw new Exception();
+
             var len = Convert.ToInt32(randomDevice.NextNormal(8, 1.5));
             len = Math.Max(len, 3);
+            len = Math.Min(len, 17);
 
             for (var i = 0; i < len; i++) {
-                if (!map.ContainsKey(position)) {
-                    map[position] = 1;
-                }
                 position += directions[dir];
 
                 if (map.ContainsKey(position)) {
@@ -139,7 +147,7 @@ public struct WorldGenSystem : IEcsInitSystem {
                     break;
                 }
 
-                map[position] = 1;
+                map.Add(position, 1);
             }
 
             if (randomDevice.Binrary(0.4)) {
