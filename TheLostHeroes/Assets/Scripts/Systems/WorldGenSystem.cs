@@ -13,9 +13,9 @@ public struct WorldGenSystem : IEcsInitSystem {
     public EcsFilter<Map> filter;
 
     public void Init() {
-        foreach (var i in filter) {
-            ref var mapEntity = ref filter.GetEntity(i);
-            ref var mapComponent = ref filter.Get1(i);
+        foreach (var filteridx in filter) {
+            ref var mapEntity = ref filter.GetEntity(filteridx);
+            ref var mapComponent = ref filter.Get1(filteridx);
             var mapRenderer = mapComponent.renderer;
 
             /******************* Некоторые эксперименты на тему *******************/
@@ -33,14 +33,15 @@ public struct WorldGenSystem : IEcsInitSystem {
             float deathRate = 0.105f;
 
             for (var epoch = 0; epoch < numEpochs; epoch++) {
+                var removeIndices = new List<int>();
+
                 for (var diggeridx = 0; diggeridx < diggers.Count; diggeridx++) {
                     var prevdir = diggers[diggeridx].dir;
                     var revprevdir = (prevdir + 2) % 4;
-                    var alive = diggers[diggeridx].Step();
+                    diggers[diggeridx].Step();
                     var currdir = diggers[diggeridx].dir;
                     var currposition = diggers[diggeridx].position;
                     
-                    if (!alive) continue;
                     for (var dir = 0; dir < 4; dir++) {
                         // добавить создание комнаты
                         
@@ -56,6 +57,12 @@ public struct WorldGenSystem : IEcsInitSystem {
 
                     if (!runtimeData.randomConfiguration.Binrary(deathRate)) continue;
                     diggers[diggeridx].Kill();
+
+                    if (!diggers[diggeridx].Alive()) removeIndices.Add(diggeridx);
+                }
+
+                for (var i = 0; i < removeIndices.Count; i++) {
+                    diggers.RemoveAt(removeIndices[i] - i);
                 }
             }
 
