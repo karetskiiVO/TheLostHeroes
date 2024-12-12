@@ -12,6 +12,13 @@ public struct WorldGenSystem : IEcsInitSystem {
 
     public EcsFilter<Map> filter;
 
+    private enum BlockType : uint {
+        Hall = 1,
+        Room = 2,
+        Wall = 3,
+        Door = 4,
+    }
+
     public void Init() {
         foreach (var filteridx in filter) {
             ref var mapEntity = ref filter.GetEntity(filteridx);
@@ -20,8 +27,8 @@ public struct WorldGenSystem : IEcsInitSystem {
 
             /******************* Некоторые эксперименты на тему *******************/
 
-            var mapDict = new Dictionary<Vector2Int, uint> {
-                { Vector2Int.zero, 1 }
+            var mapDict = new Dictionary<Vector2Int, BlockType> {
+                { Vector2Int.zero, BlockType.Hall }
             };
 
             var diggers = new List<Digger>{
@@ -114,7 +121,7 @@ public struct WorldGenSystem : IEcsInitSystem {
         protected bool alive = true;
         
         protected RandomConfiguration randomDevice = null;
-        protected Dictionary<Vector2Int, uint> map;
+        protected Dictionary<Vector2Int, BlockType> map;
 
         public abstract bool Step ();
 
@@ -127,12 +134,12 @@ public struct WorldGenSystem : IEcsInitSystem {
     }
 
     private class HallDigger : Digger {
-        public HallDigger (Dictionary<Vector2Int, uint> map, RandomConfiguration randomDevice, Vector2Int position, uint dir) {
+        public HallDigger (Dictionary<Vector2Int, BlockType> map, RandomConfiguration randomDevice, Vector2Int position, uint dir) {
             this.randomDevice = randomDevice;
 
             this.map = map;
 
-            this.dir = dir;
+            this.dir = dir % 4;
             this.position = position;
         }
 
@@ -149,12 +156,17 @@ public struct WorldGenSystem : IEcsInitSystem {
                 position += directions[dir];
 
                 if (map.ContainsKey(position)) {
-                    // переделать под комнаты
+                    if (map[position] == BlockType.Wall) {
+                        if (map[position + directions[dir]] == BlockType.Room) {
+                            map[position] = BlockType.Door;
+                        }
+                    }
+
                     alive = false;
                     break;
                 }
 
-                map.Add(position, 1);
+                map.Add(position, BlockType.Hall);
             }
 
             if (randomDevice.Binrary(0.4)) {
@@ -172,8 +184,100 @@ public struct WorldGenSystem : IEcsInitSystem {
     }
 
     private class RoomDigger : Digger {
+        public RoomDigger (Dictionary<Vector2Int, BlockType> map, RandomConfiguration randomDevice, Vector2Int position, uint dir) {
+            alive = false;
+
+            this.dir = dir % 4;
+            this.position = position;
+            this.randomDevice = randomDevice;
+            this.map = map;
+        }
+
+        private void CreateRoom () {
+            var roomForward = directions[dir];
+            var roomRight = directions[(dir + 3) % 4];
+        
+            var roomWidth = Convert.ToInt32(randomDevice.NextNormal(6, 2));
+            var roomDepth = Convert.ToInt32(randomDevice.NextNormal(6, 2));
+        
+            roomWidth = Math.Min(Math.Max(3, roomWidth), 12);
+            roomDepth = Math.Min(Math.Max(3, roomDepth), 12);
+
+            var offset = randomDevice.Next(roomWidth);
+
+            for (var x = -offset; x < roomWidth - offset; x++) {
+                for (var y = 0; y < roomDepth; y++) {
+                    var currpos = x * roomRight + y * roomForward + position + 2 * directions[dir];
+
+                    if (map.ContainsKey(currpos)) {
+                        return;
+                    }
+                }
+            }
+
+            for (var x = -offset; x < roomWidth - offset; x++) {
+                var currpos = x * roomRight + (-1) * roomForward + position + 2 * directions[dir];
+                
+                if (map.ContainsKey(currpos) && map[currpos] != BlockType.Wall) {
+                    return;
+                }
+            }
+            for (var x = -offset; x < roomWidth - offset; x++) {
+                var currpos = x * roomRight + roomDepth * roomForward + position + 2 * directions[dir];
+                
+                if (map.ContainsKey(currpos) && map[currpos] != BlockType.Wall) {
+                    return;
+                }
+            }
+            for (var y = 0; y < roomDepth; y++) {
+                var currpos = (-offset - 1) * roomRight + y * roomForward + position + 2 * directions[dir];
+
+                if (map.ContainsKey(currpos) && map[currpos] != BlockType.Wall) {
+                    return;
+                }
+            }
+            for (var y = 0; y < roomDepth; y++) {
+                var currpos = (roomWidth-offset) * roomRight + y * roomForward + position + 2 * directions[dir];
+
+                if (map.ContainsKey(currpos) && map[currpos] != BlockType.Wall) {
+                    return;
+                }
+            }
+
+            for (var x = -offset; x < roomWidth - offset; x++) {
+                for (var y = 0; y < roomDepth; y++) {
+                    var currpos = x * roomRight + y * roomForward + position + 2 * directions[dir];
+
+                    if (map.ContainsKey(currpos)) {
+                        return;
+                    }
+                }
+            }
+
+            for (var x = -offset; x < roomWidth - offset; x++) {
+                var currpos = x * roomRight + (-1) * roomForward + position + 2 * directions[dir];
+                
+                map.Add(currpos, BlockType.Room);
+            }
+            for (var x = -offset; x < roomWidth - offset; x++) {
+                var currpos = x * roomRight + roomDepth * roomForward + position + 2 * directions[dir];
+
+                map.Add(currpos, BlockType.Wall);
+            }
+            for (var y = 0; y < roomDepth; y++) {
+                var currpos = (- offset - 1) * roomRight + y * roomForward + position + 2 * directions[dir];
+
+                map.Add(currpos, BlockType.Wall);
+            }
+            for (var y = 0; y < roomDepth; y++) {
+                var currpos = (roomWidth - offset) * roomRight + y * roomForward + position + 2 * directions[dir];
+
+                map.Add(currpos, BlockType.Wall);
+            }
+        }
+
         public override bool Step () {
-            throw new NotImplementedException();
+            return alive;
         }
     }
 }
