@@ -2,7 +2,7 @@ using System;
 using System.Text;
 
 public class RandomConfiguration {
-    private Random randomDevice;
+    private readonly Random randomDevice;
     readonly string seed;
 
     const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
