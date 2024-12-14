@@ -1,5 +1,6 @@
 using UnityEngine;
+using UnityEngine.U2D;
 
 public class SpriteContainer : MonoBehaviour {
-    public Sprite[] sprites;
+    public SpriteAtlas sprites;
 }

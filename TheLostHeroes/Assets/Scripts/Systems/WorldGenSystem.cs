@@ -70,9 +70,9 @@ public struct WorldGenSystem : IEcsInitSystem {
         
         private Tilemap tilemap;
         private TilemapRenderer renderer;
-        private Sprite[] sprites;
+        private SpriteAtlas sprites;
 
-        public DungeonAccumulator(RandomConfiguration randomDevice, Tilemap tilemap, TilemapRenderer renderer, Sprite[] sprites) {
+        public DungeonAccumulator(RandomConfiguration randomDevice, Tilemap tilemap, TilemapRenderer renderer, SpriteAtlas sprites) {
             this.randomDevice = randomDevice;
 
             this.tilemap = tilemap;
@@ -187,7 +187,7 @@ public struct WorldGenSystem : IEcsInitSystem {
         public void Bake () {
             AddWalls();
 
-            var quadredMap = new Dictionary<Vector2Int, BlockType>();
+            // var quadredMap = new Dictionary<Vector2Int, BlockType>();
 
             int xmin = int.MaxValue;
             int ymin = int.MaxValue;
@@ -217,13 +217,24 @@ public struct WorldGenSystem : IEcsInitSystem {
             //     xmax = Math.Max(xmax, 4 * elem.Key.x + 3);
             //     ymax = Math.Max(ymax, 4 * elem.Key.y + 3);
             // }
+            
 
-            Tile tile = ScriptableObject.CreateInstance<Tile>();
-            tile.sprite = sprites[28];
-            foreach (var elem in map) {
-                if ((elem.Value & BlockType.WithFloor) == 0) continue;
-                tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y, 0), tile);
+            for (var x = 0; x < 4; x++) {
+                for (var y = 0; y < 4; y++) {
+                    Tile tile = ScriptableObject.CreateInstance<Tile>();
+                    tile.sprite = sprites.GetSprite("Tiles_" + (4 * x + y + 28).ToString());
+                    tilemap.SetTile(new Vector3Int(x, y, 0), tile);
+                }
             }
+
+            Debug.Log(tilemap.size);
+
+            // foreach (var elem in map) {
+            //     if ((elem.Value & BlockType.WithFloor) == 0) continue;
+
+            //     Debug.Log(new Vector3Int(elem.Key.x, elem.Key.y, 0));
+            //     tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y, 0), tile);
+            // }
             
             tilemap.RefreshAllTiles();
             Debug.Log(renderer.bounds);
