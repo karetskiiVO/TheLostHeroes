@@ -185,59 +185,85 @@ public struct WorldGenSystem : IEcsInitSystem {
         }
 
         public void Bake () {
-            AddWalls();
-
-            // var quadredMap = new Dictionary<Vector2Int, BlockType>();
-
-            int xmin = int.MaxValue;
-            int ymin = int.MaxValue;
-            int xmax = int.MinValue;
-            int ymax = int.MinValue;
-
-            foreach (var elem in map) {
-                xmin = Math.Min(xmin, elem.Key.x);
-                ymin = Math.Min(ymin, elem.Key.y);
-                xmax = Math.Max(xmax, elem.Key.x);
-                ymax = Math.Max(ymax, elem.Key.y);
-            }
-
-            // var pivot = new Vector2Int(xmin, ymin);
-            
             // // Все это слишком неэффективно и надо бы переделать
 
-            // foreach (var elem in map) {
-            //     for (var dx = 0; dx < 4; dx++) {
-            //         for (var dy = 0; dy < 4; dy++) {
-            //             quadredMap.Add(4 * (elem.Key - pivot) + new Vector2Int(dx, dy), elem.Value);
-            //         }
-            //     }
+            AddWalls();
 
-            //     xmin = Math.Min(xmin, 4 * elem.Key.x);
-            //     ymin = Math.Min(ymin, 4 * elem.Key.y);
-            //     xmax = Math.Max(xmax, 4 * elem.Key.x + 3);
-            //     ymax = Math.Max(ymax, 4 * elem.Key.y + 3);
-            // }
-            
+            var xcent = 0;
+            var ycent = 0;
 
-            for (var x = 0; x < 4; x++) {
-                for (var y = 0; y < 4; y++) {
-                    Tile tile = ScriptableObject.CreateInstance<Tile>();
-                    tile.sprite = sprites.GetSprite("Tiles_" + (4 * x + y + 28).ToString());
-                    tilemap.SetTile(new Vector3Int(x, y, 0), tile);
+            foreach (var elem in map) {
+                xcent += elem.Key.x;
+                ycent += elem.Key.y;
+            }
+
+            xcent /= map.Count;
+            ycent /= map.Count;
+
+            var pivot = new Vector2Int(xcent, ycent);
+            var tripledMap = new Dictionary<Vector2Int, BlockType>();
+
+            foreach (var elem in map) {
+                for (var dx = 0; dx < 3; dx++) {
+                    for (var dy = 0; dy < 3; dy++) {
+                        tripledMap.Add(3 * (elem.Key - pivot) + new Vector2Int(dx, dy), elem.Value);
+                    }
                 }
             }
 
-            Debug.Log(tilemap.size);
+            var neighbours = new Vector2Int[] {
+                Vector2Int.up + Vector2Int.left, Vector2Int.up, Vector2Int.right + Vector2Int.up, Vector2Int.right,
+                Vector2Int.right + Vector2Int.down, Vector2Int.down, Vector2Int.left + Vector2Int.down, Vector2Int.left
+            };
 
-            // foreach (var elem in map) {
-            //     if ((elem.Value & BlockType.WithFloor) == 0) continue;
+            var floorSprites = new Dictionary<uint, Sprite> {
+                { 0b1100_0001, sprites.GetSprite("Tiles_27") },
+                { 0b1000_0001, sprites.GetSprite("Tiles_27") },
+                { 0b1100_0000, sprites.GetSprite("Tiles_27") },
+                { 0b0000_0000, sprites.GetSprite("Tiles_28") },
+                { 0b0001_1100, sprites.GetSprite("Tiles_29") },
+                { 0b0000_1100, sprites.GetSprite("Tiles_29") },
+                { 0b0001_1000, sprites.GetSprite("Tiles_29") },
+                { 0b1100_0111, sprites.GetSprite("Tiles_4")  },
+                { 0b1100_0110, sprites.GetSprite("Tiles_4")  },
+                { 0b0000_0111, sprites.GetSprite("Tiles_5")  },
+                { 0b0000_0011, sprites.GetSprite("Tiles_5")  },
+                { 0b0000_0110, sprites.GetSprite("Tiles_5")  },
+                { 0b0001_1111, sprites.GetSprite("Tiles_6")  },
+                { 0b0001_1011, sprites.GetSprite("Tiles_6")  },
+                { 0b1111_0001, sprites.GetSprite("Tiles_49") },
+                { 0b1011_0001, sprites.GetSprite("Tiles_49") },
+                { 0b0111_0000, sprites.GetSprite("Tiles_50") },
+                { 0b0011_0000, sprites.GetSprite("Tiles_50") },
+                { 0b0110_0000, sprites.GetSprite("Tiles_50") },
+                { 0b0111_1100, sprites.GetSprite("Tiles_51") },
+                { 0b0110_1100, sprites.GetSprite("Tiles_51") },
+            };
 
-            //     Debug.Log(new Vector3Int(elem.Key.x, elem.Key.y, 0));
-            //     tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y, 0), tile);
-            // }
+            foreach (var elem in tripledMap) {
+                if ((elem.Value & BlockType.WithFloor) != 0) {
+                    uint floormask = 0;
+
+                    for (int neightbourCnt = 0; neightbourCnt < neighbours.Length; neightbourCnt++) {
+                        if (!tripledMap.ContainsKey(elem.Key + neighbours[neightbourCnt])) {
+                            floormask |= (uint)1 << neightbourCnt;
+                        } else if ((tripledMap[elem.Key + neighbours[neightbourCnt]] & BlockType.WithFloor) == 0) {
+                            floormask |= (uint)1 << neightbourCnt;
+                        }
+                    }
+
+                    Tile tile = ScriptableObject.CreateInstance<Tile>();
+                    try {
+                        tile.sprite = floorSprites[floormask];
+                    } catch {
+                        tile.sprite = floorSprites[0];
+                    }
+                    tile.transform = Matrix4x4.TRS(new Vector3(elem.Key.x, elem.Key.y, 0) / 9, Quaternion.identity, Vector3.one / 9);
+                    tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y, 0), tile);
+                }
+            }
             
             tilemap.RefreshAllTiles();
-            Debug.Log(renderer.bounds);
         }
 
         public HallDigger NewHallDigger (Vector2Int position, uint dir) {
