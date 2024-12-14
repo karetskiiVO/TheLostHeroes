@@ -10,11 +10,12 @@ public class ECS : MonoBehaviour
     private EcsWorld ecsWorld;
     private EcsSystems systems;
 
-    private void Start()
-    {
+    private void Start () {
         ecsWorld = new EcsWorld();
         systems = new EcsSystems(ecsWorld);
-        RuntimeData runtimeData = new RuntimeData();
+        RuntimeData runtimeData = new RuntimeData{
+            randomConfiguration = new RandomConfiguration(sceneData.seed),
+        };
 
         systems
             // Системы с основной логикой должны
