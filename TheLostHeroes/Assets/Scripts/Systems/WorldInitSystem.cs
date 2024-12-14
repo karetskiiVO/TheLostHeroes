@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Leopotam.Ecs;
 using UnityEngine.AI;
+using UnityEngine.Tilemaps;
 
 public struct WorldInitSystem : IEcsInitSystem {
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
@@ -16,10 +17,12 @@ public struct WorldInitSystem : IEcsInitSystem {
         runtimeData.envPlayer.Get<Player>().name = "Environment";
 
         //Create the map
-        runtimeData.Map = ecsWorld.NewEntity();
-        ref var map     = ref runtimeData.Map.Get<Map>();
-        var mapObject   = new GameObject("map");
-        map.renderer    = mapObject.AddComponent<SpriteRenderer>();
+        runtimeData.map = ecsWorld.NewEntity();
+        ref var map     = ref runtimeData.map.Get<Map>();
+        var mapObject   = GameObject.Find("map");
+        map.tilemap     = mapObject.GetComponent<Tilemap>();
+        map.renderer    = mapObject.GetComponent<TilemapRenderer>();
+        map.sprites     = mapObject.GetComponent<SpriteContainer>().sprites;
 
         //create a random pawn
         var pawnEntity = ecsWorld.NewEntity();

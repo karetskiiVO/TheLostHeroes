@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 [CreateAssetMenu]
 public class StaticData : ScriptableObject
@@ -13,10 +14,4 @@ public class StaticData : ScriptableObject
     }
 
     public List<TileData> TileTypes;
-
-    [System.Serializable]
-    public class GameResources {
-        public Texture2D dungeonTiles;
-    }
-    public GameResources gameResources;
 }

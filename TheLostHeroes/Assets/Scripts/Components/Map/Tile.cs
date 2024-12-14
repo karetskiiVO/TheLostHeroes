@@ -3,6 +3,6 @@ using System.Collections.Generic;
 using Leopotam.Ecs;
 using UnityEngine;
 
-public class Tile {
+public class WrongTile { // переименовать
     public uint id;
 }

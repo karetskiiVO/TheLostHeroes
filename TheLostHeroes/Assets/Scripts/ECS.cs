@@ -10,14 +10,11 @@ public class ECS : MonoBehaviour
     private EcsWorld ecsWorld;
     private EcsSystems systems;
 
-    [SerializeField]string seed;
-
-    private void Start()
-    {
+    private void Start () {
         ecsWorld = new EcsWorld();
         systems = new EcsSystems(ecsWorld);
         RuntimeData runtimeData = new RuntimeData{
-            randomConfiguration = new RandomConfiguration(seed)
+            randomConfiguration = new RandomConfiguration(sceneData.seed),
         };
 
         systems

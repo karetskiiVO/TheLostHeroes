@@ -4,9 +4,10 @@ using Leopotam.Ecs;
 using UnityEngine;
 
 public struct Spawner {
-    //TODO:spawner properties
+    // TODO:spawner properties
 }
 
 public struct Room {
-    public List<EcsEntity> tiles;
+    // public List<EcsEntity> tiles;
+    public Collider2D collider;
 }
