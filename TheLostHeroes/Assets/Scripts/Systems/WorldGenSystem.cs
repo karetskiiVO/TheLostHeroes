@@ -3,6 +3,7 @@ using UnityEngine;
 using Leopotam.Ecs;
 using System;
 using UnityEngine.Tilemaps;
+using UnityEngine.U2D;
 
 public struct WorldGenSystem : IEcsInitSystem {
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
@@ -223,9 +224,9 @@ public struct WorldGenSystem : IEcsInitSystem {
                 if ((elem.Value & BlockType.WithFloor) == 0) continue;
                 tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y, 0), tile);
             }
-
+            
             tilemap.RefreshAllTiles();
-            Debug.Log(tilemap.size);
+            Debug.Log(renderer.bounds);
         }
 
         public HallDigger NewHallDigger (Vector2Int position, uint dir) {
