@@ -44,6 +44,7 @@ public struct WorldGenSystem : IEcsInitSystem
             /******************* Некоторые эксперименты на тему *******************/
 
             var dungeonAccumulator = new DungeonAccumulator(
+                this,
                 runtimeData.randomConfiguration,
                 mapComponent.tilemap,
                 mapComponent.sprites
@@ -62,6 +63,7 @@ public struct WorldGenSystem : IEcsInitSystem
 
     private class DungeonAccumulator
     {
+        WorldGenSystem parent;
         private Dictionary<Vector2Int, BlockType> map;
         private readonly RandomConfiguration randomDevice;
         private List<RoomInfo> roomsInfo = new List<RoomInfo>();
@@ -69,8 +71,9 @@ public struct WorldGenSystem : IEcsInitSystem
         private readonly Tilemap tilemap;
         private readonly SpriteAtlas sprites;
 
-        public DungeonAccumulator(RandomConfiguration randomDevice, Tilemap tilemap, SpriteAtlas sprites)
+        public DungeonAccumulator(WorldGenSystem parent, RandomConfiguration randomDevice, Tilemap tilemap, SpriteAtlas sprites)
         {
+            this.parent = parent;
             this.randomDevice = randomDevice;
 
             this.tilemap = tilemap;
@@ -132,6 +135,16 @@ public struct WorldGenSystem : IEcsInitSystem
                         diggers.RemoveAt(removeIndices[i] - i);
                     }
                 }
+            }
+            parent.runtimeData.rooms = new List<EcsEntity>();
+            foreach (RoomInfo r in roomsInfo)
+            {
+                EcsEntity roomEntity = parent.ecsWorld.NewEntity();//TODO: уточнить формулы
+                ref var room = ref roomEntity.Get<Room>();
+                var roomCollider = UnityEngine.Object.Instantiate(parent.staticData.roomPrefab, new Vector3((r.xmax + r.xmin) / 2f / 2.2f + 1.5f, (r.ymax + r.ymin) / 2f / 2.2f - 4.5f), Quaternion.identity).GetComponent<BoxCollider2D>();
+                room.collider = roomCollider;
+                roomCollider.size = new Vector2((r.xmax - r.xmin) / 2f, (r.ymax - r.ymin) / 2f);
+                parent.runtimeData.rooms.Add(roomEntity);
             }
         }
 

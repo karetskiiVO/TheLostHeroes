@@ -14,10 +14,6 @@ public struct WorldInitSystem : IEcsInitSystem
 
     public void Init()
     {
-        //Create a player who owns bots
-        // runtimeData.envPlayer = ecsWorld.NewEntity();
-        // runtimeData.envPlayer.Get<Player>().name = "Environment";
-
         //Create the map
         runtimeData.map = ecsWorld.NewEntity();
         ref var map = ref runtimeData.map.Get<Map>();
@@ -33,7 +29,7 @@ public struct WorldInitSystem : IEcsInitSystem
         pawn.speed = 1;
         pawnEntity.Get<Health>().hp = 100;
         pawnEntity.Get<Attack>().atk = 10;
-        pawnEntity.Get<Owned>().owner = runtimeData.envPlayer;
+        pawnEntity.Get<Owned>().owner = -1;
         pawnEntity.Get<KnightPawn>(); // и флаг что это рыцарь
 
         var pawnObject = Object.Instantiate(staticData.pawnPrefab, Vector3.zero, Quaternion.identity);

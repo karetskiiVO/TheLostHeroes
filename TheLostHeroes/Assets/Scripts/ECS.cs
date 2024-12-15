@@ -10,10 +10,12 @@ public class ECS : MonoBehaviour
     private EcsWorld ecsWorld;
     private EcsSystems systems;
 
-    private void Start () {
+    private void Start()
+    {
         ecsWorld = new EcsWorld();
         systems = new EcsSystems(ecsWorld);
-        RuntimeData runtimeData = new RuntimeData{
+        RuntimeData runtimeData = new RuntimeData
+        {
             randomConfiguration = new RandomConfiguration(sceneData.seed),
         };
 
@@ -35,6 +37,7 @@ public class ECS : MonoBehaviour
 
             .Add(new WorldInitSystem())
             .Add(new WorldGenSystem())
+            .Add(new MasterInitSystem())
 
             .Inject(configuration)
             .Inject(sceneData)

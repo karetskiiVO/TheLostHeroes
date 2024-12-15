@@ -25,7 +25,7 @@ public struct MasterInitSystem : IEcsInitSystem
         pawn.speed = 1;
         pawnEntity.Get<Health>().hp = 100;
         pawnEntity.Get<Attack>().atk = 10;
-        pawnEntity.Get<Owned>().owner = runtimeData.envPlayer;
+        //pawnEntity.Get<Owned>().owner = runtimeData.envPlayer;
         pawnEntity.Get<KnightPawn>(); // и флаг что это рыцарь
 
         var pawnObject = Object.Instantiate(staticData.pawnPrefab, Vector3.zero, Quaternion.identity);

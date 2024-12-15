@@ -5,11 +5,12 @@ using System;
 using System.Text;
 using UnityEngine;
 
-public struct RuntimeData {
+public struct RuntimeData
+{
     //stuff only created in runtime
-    
-    public EcsEntity envPlayer;
     public EcsEntity map;
 
     public RandomConfiguration randomConfiguration;
+
+    public List<EcsEntity> rooms;
 }
