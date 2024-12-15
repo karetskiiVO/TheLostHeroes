@@ -321,6 +321,8 @@ public struct WorldGenSystem : IEcsInitSystem
             var lVerticalFinishes = new HashSet<Vector2Int>();
             var rVerticalFinishes = new HashSet<Vector2Int>();
 
+            Debug.Log(tilemap.cellSize);
+
             foreach (var elem in quadredMap)
             {
                 if ((elem.Value & BlockType.WithFloor) != 0)
@@ -346,7 +348,7 @@ public struct WorldGenSystem : IEcsInitSystem
                     }
                     tile.sprite = floorSprites[floormask];
 
-                    tile.transform = Matrix4x4.TRS(new Vector3(elem.Key.x, elem.Key.y, 0) / 9, Quaternion.identity, Vector3.one / 9);
+                    tile.transform = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
                     tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y, 0), tile);
                 }
 
@@ -388,13 +390,15 @@ public struct WorldGenSystem : IEcsInitSystem
                         if (currWallSprites[i] == null) continue;
 
                         Tile tile = ScriptableObject.CreateInstance<Tile>();
-                        tile.transform = Matrix4x4.TRS(new Vector3(elem.Key.x, elem.Key.y + i, 0) / 9, Quaternion.identity, Vector3.one / 9);
+                        tile.transform = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
                         tile.sprite = currWallSprites[i];
 
                         tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y + i, 0), tile);
                     }
                 }
             }
+
+            Debug.Log(tilemap.cellSize);
 
             var leftWallSprite = sprites.GetSprite("Tiles_116");
             foreach (var lstart in lVerticalStarts)
@@ -404,7 +408,7 @@ public struct WorldGenSystem : IEcsInitSystem
                 while (!lVerticalFinishes.Contains(pos))
                 {
                     Tile tile = ScriptableObject.CreateInstance<Tile>();
-                    tile.transform = Matrix4x4.TRS(new Vector3(pos.x, pos.y, 0) / 9, Quaternion.identity, Vector3.one / 9);
+                    tile.transform = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
                     tile.sprite = leftWallSprite;
 
                     tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), tile);
@@ -421,7 +425,7 @@ public struct WorldGenSystem : IEcsInitSystem
                 while (!rVerticalFinishes.Contains(pos))
                 {
                     Tile tile = ScriptableObject.CreateInstance<Tile>();
-                    tile.transform = Matrix4x4.TRS(new Vector3(pos.x, pos.y, 0) / 9, Quaternion.identity, Vector3.one / 9);
+                    tile.transform = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
                     tile.sprite = rightWallSprite;
 
                     tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), tile);
