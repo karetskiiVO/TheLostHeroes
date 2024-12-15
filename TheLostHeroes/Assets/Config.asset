@@ -13,6 +13,5 @@ MonoBehaviour:
   m_Name: Config
   m_EditorClassIdentifier: 
   pawnPrefab: {fileID: 8477544308936224630, guid: 231ef7736d500b04a8550a3c745bac06, type: 3}
+  roomPrefab: {fileID: 585098865824119556, guid: e239f1e7d8495ab429493cc6d482f391, type: 3}
   TileTypes: []
-  gameResources:
-    dungeonTiles: {fileID: 2800000, guid: 4aa0deafb2bd3854892d70a4886e0eae, type: 3}
