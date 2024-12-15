@@ -137,15 +137,6 @@ public struct WorldGenSystem : IEcsInitSystem
                 }
             }
             parent.runtimeData.rooms = new List<EcsEntity>();
-            foreach (RoomInfo r in roomsInfo)
-            {
-                EcsEntity roomEntity = parent.ecsWorld.NewEntity();//TODO: уточнить формулы
-                ref var room = ref roomEntity.Get<Room>();
-                var roomCollider = UnityEngine.Object.Instantiate(parent.staticData.roomPrefab, new Vector3((r.xmax + r.xmin) / 2f / 2.2f + 1.5f, (r.ymax + r.ymin) / 2f / 2.2f - 4.5f), Quaternion.identity).GetComponent<BoxCollider2D>();
-                room.collider = roomCollider;
-                roomCollider.size = new Vector2((r.xmax - r.xmin) / 2f, (r.ymax - r.ymin) / 2f);
-                parent.runtimeData.rooms.Add(roomEntity);
-            }
         }
 
         public void Clear()
@@ -221,19 +212,7 @@ public struct WorldGenSystem : IEcsInitSystem
 
             AddWalls();
 
-            var xcent = 0;
-            var ycent = 0;
-
-            foreach (var elem in map)
-            {
-                xcent += elem.Key.x;
-                ycent += elem.Key.y;
-            }
-
-            xcent /= map.Count;
-            ycent /= map.Count;
-
-            var pivot = new Vector2Int(xcent, ycent);
+            var pivot = new Vector2Int(0, 0);
             var quadredMap = new Dictionary<Vector2Int, BlockType>();
 
             var usedSpritesIndeces = new HashSet<int>{
@@ -435,6 +414,24 @@ public struct WorldGenSystem : IEcsInitSystem
 
             // TODO: пересчитать координаты комнат
             // TODO: избавиться от магических констант в масштабе
+
+            foreach (RoomInfo r in roomsInfo)
+            {
+                EcsEntity roomEntity = parent.ecsWorld.NewEntity();//TODO: уточнить формулы
+                ref var room = ref roomEntity.Get<Room>();
+                var roomCollider = UnityEngine.Object.Instantiate(
+                    parent.staticData.roomPrefab, 
+                    tilemap.LocalToWorld(new Vector3(
+                        (r.xmax + r.xmin) * 1.0f / 2,
+                        (r.ymax + r.ymin) * 1.0f / 2
+                    )), 
+                    Quaternion.identity
+                ).GetComponent<BoxCollider2D>();
+
+                room.collider = roomCollider;
+                roomCollider.size = new Vector2((r.xmax - r.xmin), (r.ymax - r.ymin));
+                parent.runtimeData.rooms.Add(roomEntity);
+            }
         }
 
         public HallDigger NewHallDigger(Vector2Int position, uint dir)
