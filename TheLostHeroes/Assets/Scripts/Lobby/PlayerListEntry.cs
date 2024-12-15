@@ -1,14 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="PlayerListEntry.cs" company="Exit Games GmbH">
-//   Part of: Asteroid Demo,
-// </copyright>
-// <summary>
-//  Player List Entry
-// </summary>
-// <author>developer@exitgames.com</author>
-// --------------------------------------------------------------------------------------------------------------------
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 using ExitGames.Client.Photon;
@@ -44,7 +34,8 @@ namespace Photon.Pun.Aboba
             }
             else
             {
-                Hashtable initialProps = new Hashtable() {{AsteroidsGame.PLAYER_READY, isPlayerReady}, {AsteroidsGame.PLAYER_LIVES, AsteroidsGame.PLAYER_MAX_LIVES}};
+                //TODO:init all network player data
+                Hashtable initialProps = new Hashtable() { { StaticData.PLAYER_READY, isPlayerReady }/*, { StaticData.PLAYER_LIVES, StaticData.PLAYER_MAX_LIVES }*/ };
                 PhotonNetwork.LocalPlayer.SetCustomProperties(initialProps);
                 PhotonNetwork.LocalPlayer.SetScore(0);
 
@@ -53,7 +44,7 @@ namespace Photon.Pun.Aboba
                     isPlayerReady = !isPlayerReady;
                     SetPlayerReady(isPlayerReady);
 
-                    Hashtable props = new Hashtable() {{AsteroidsGame.PLAYER_READY, isPlayerReady}};
+                    Hashtable props = new Hashtable() { { StaticData.PLAYER_READY, isPlayerReady } };
                     PhotonNetwork.LocalPlayer.SetCustomProperties(props);
 
                     if (PhotonNetwork.IsMasterClient)
@@ -83,7 +74,7 @@ namespace Photon.Pun.Aboba
             {
                 if (p.ActorNumber == ownerId)
                 {
-                    PlayerColorImage.color = AsteroidsGame.GetColor(p.GetPlayerNumber());
+                    PlayerColorImage.color = StaticData.GetColor(p.GetPlayerNumber());
                 }
             }
         }

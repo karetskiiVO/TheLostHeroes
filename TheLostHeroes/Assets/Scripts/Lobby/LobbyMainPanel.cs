@@ -123,7 +123,7 @@ namespace Photon.Pun.Aboba
                 entry.GetComponent<PlayerListEntry>().Initialize(p.ActorNumber, p.NickName);
 
                 object isPlayerReady;
-                if (p.CustomProperties.TryGetValue(AsteroidsGame.PLAYER_READY, out isPlayerReady))
+                if (p.CustomProperties.TryGetValue(StaticData.PLAYER_READY, out isPlayerReady))
                 {
                     entry.GetComponent<PlayerListEntry>().SetPlayerReady((bool)isPlayerReady);
                 }
@@ -135,7 +135,7 @@ namespace Photon.Pun.Aboba
 
             Hashtable props = new Hashtable
             {
-                {AsteroidsGame.PLAYER_LOADED_LEVEL, false}
+                {StaticData.PLAYER_LOADED_MAP, false}
             };
             PhotonNetwork.LocalPlayer.SetCustomProperties(props);
         }
@@ -192,7 +192,7 @@ namespace Photon.Pun.Aboba
             if (playerListEntries.TryGetValue(targetPlayer.ActorNumber, out entry))
             {
                 object isPlayerReady;
-                if (changedProps.TryGetValue(AsteroidsGame.PLAYER_READY, out isPlayerReady))
+                if (changedProps.TryGetValue(StaticData.PLAYER_READY, out isPlayerReady))
                 {
                     entry.GetComponent<PlayerListEntry>().SetPlayerReady((bool)isPlayerReady);
                 }
@@ -220,10 +220,7 @@ namespace Photon.Pun.Aboba
             string roomName = RoomNameInputField.text;
             roomName = (roomName.Equals(string.Empty)) ? "Room " + Random.Range(1000, 10000) : roomName;
 
-            byte maxPlayers = (byte)2;
-            maxPlayers = (byte)Mathf.Clamp(maxPlayers, 2, 8);
-
-            RoomOptions options = new RoomOptions { MaxPlayers = maxPlayers, PlayerTtl = 10000 };
+            RoomOptions options = new RoomOptions { MaxPlayers = 2, PlayerTtl = 10000 };
 
             PhotonNetwork.CreateRoom(roomName, options, null);
         }
@@ -270,7 +267,7 @@ namespace Photon.Pun.Aboba
             PhotonNetwork.CurrentRoom.IsOpen = false;
             PhotonNetwork.CurrentRoom.IsVisible = false;
 
-            PhotonNetwork.LoadLevel("DemoAsteroids-GameScene");
+            PhotonNetwork.LoadLevel("SampleScene");
         }
 
         #endregion
@@ -285,7 +282,7 @@ namespace Photon.Pun.Aboba
             foreach (Player p in PhotonNetwork.PlayerList)
             {
                 object isPlayerReady;
-                if (p.CustomProperties.TryGetValue(AsteroidsGame.PLAYER_READY, out isPlayerReady))
+                if (p.CustomProperties.TryGetValue(StaticData.PLAYER_READY, out isPlayerReady))
                 {
                     if (!(bool)isPlayerReady)
                     {
