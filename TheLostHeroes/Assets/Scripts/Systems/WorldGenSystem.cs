@@ -7,6 +7,8 @@ using UnityEngine.U2D;
 
 using Photon.Pun;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+using Unity.VisualScripting;
+using ExitGames.Client.Photon;
 
 public struct WorldGenSystem : IEcsInitSystem
 {
@@ -136,15 +138,15 @@ public struct WorldGenSystem : IEcsInitSystem
                     }
                 }
             }
-            parent.runtimeData.rooms = new List<EcsEntity>();
             foreach (RoomInfo r in roomsInfo)
             {
-                EcsEntity roomEntity = parent.ecsWorld.NewEntity();//TODO: уточнить формулы
-                ref var room = ref roomEntity.Get<Room>();
-                var roomCollider = UnityEngine.Object.Instantiate(parent.staticData.roomPrefab, new Vector3((r.xmax + r.xmin) / 2f / 2.2f + 1.5f, (r.ymax + r.ymin) / 2f / 2.2f - 4.5f), Quaternion.identity).GetComponent<BoxCollider2D>();
-                room.collider = roomCollider;
-                roomCollider.size = new Vector2((r.xmax - r.xmin) / 2f, (r.ymax - r.ymin) / 2f);
-                parent.runtimeData.rooms.Add(roomEntity);
+                Room room = new Room();
+                room.netFields = new Room.Networked();
+                room.netFields.sizex = (r.xmax - r.xmin) / 2f;
+                room.netFields.sizey = (r.ymax - r.ymin) / 2f;
+                room.netFields.posx = (r.xmax + r.xmin) / 2f / 2.2f;
+                room.netFields.posy = (r.ymax + r.ymin) / 2f / 2.2f;
+                PhotonView.Get(NetEntitySyncroniser.instance).RPC("Create", RpcTarget.All, new object[] { parent.runtimeData.id++, new object[] { room } });
             }
         }
 

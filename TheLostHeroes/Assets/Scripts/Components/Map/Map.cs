@@ -5,7 +5,8 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.U2D;
 
-public struct Map {
+public struct Map
+{
     public Tilemap tilemap;
     public TilemapRenderer renderer;
     public SpriteAtlas sprites;
