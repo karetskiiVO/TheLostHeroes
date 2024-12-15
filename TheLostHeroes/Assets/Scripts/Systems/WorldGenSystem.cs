@@ -170,7 +170,7 @@ public struct WorldGenSystem : IEcsInitSystem {
         }
 
         public void Bake () {
-            // // Все это слишком неэффективно и надо бы переделать
+            // Все это слишком неэффективно и надо бы переделать
 
             AddWalls();
 
@@ -299,6 +299,8 @@ public struct WorldGenSystem : IEcsInitSystem {
                         }
                     }
 
+                    // TODO: Запечь статические коллайдеры для системы поиска маршрутов
+
                     if (!wallSprites.ContainsKey(wallmask)) {
                         wallmask = 0b1111_1111;
                     }
@@ -311,7 +313,7 @@ public struct WorldGenSystem : IEcsInitSystem {
                     else if (lVerticalFinishesMasks.Contains(wallmask)) 
                         lVerticalFinishes.Add(elem.Key + new Vector2Int(0, wallSprites[wallmask].Length - 1));
                     else if (rVerticalFinishesMasks.Contains(wallmask)) 
-                        rVerticalFinishes.Add(elem.Key + new Vector2Int(0, wallSprites[wallmask].Length - 1));
+                        rVerticalFinishes.Add(elem.Key + new Vector2Int(0, wallSprites[wallmask].Length - 1)); 
 
                     for (var i = 0; i < currWallSprites.Length; i++) {
                         if (currWallSprites[i] == null) continue;
@@ -354,8 +356,11 @@ public struct WorldGenSystem : IEcsInitSystem {
                     pos += Vector2Int.up;
                 }
             }
-            
+
             tilemap.RefreshAllTiles();
+
+            // TODO: пересчитать координаты комнат
+            // TODO: избавиться от магических констант в масштабе
         }
 
         public HallDigger NewHallDigger (Vector2Int position, uint dir) {
