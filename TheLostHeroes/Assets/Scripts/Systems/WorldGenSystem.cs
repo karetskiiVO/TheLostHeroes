@@ -146,7 +146,8 @@ public struct WorldGenSystem : IEcsInitSystem
                 room.netFields.sizey = (r.ymax - r.ymin) / 2f;
                 room.netFields.posx = (r.xmax + r.xmin) / 2f / 2.2f;
                 room.netFields.posy = (r.ymax + r.ymin) / 2f / 2.2f;
-                PhotonView.Get(NetEntitySyncroniser.instance).RPC("Create", RpcTarget.All, new object[] { parent.runtimeData.id++, new object[] { room } });
+                PhotonView.Get(NetEntitySyncroniser.instance).RPC("CreateWithComponents", RpcTarget.All, new object[] { NetEntitySyncroniser.instance.nextID++,
+                    new object[] { room } });
             }
         }
 

@@ -7,7 +7,6 @@ using UnityEngine;
 
 public struct RuntimeData
 {
-    public int id;
     //stuff only created in runtime
     public EcsEntity map;
 

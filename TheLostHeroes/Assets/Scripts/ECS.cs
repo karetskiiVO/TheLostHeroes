@@ -38,6 +38,7 @@ public class ECS : MonoBehaviour
             .Add(new WorldInitSystem())
             .Add(new WorldGenSystem())
             .Add(new MasterInitSystem())
+            .Add(new PawnMoveSystem())
 
             .Inject(configuration)
             .Inject(sceneData)
