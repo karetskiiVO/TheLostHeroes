@@ -141,7 +141,56 @@ public struct WorldGenSystem : IEcsInitSystem
 
         public void Clear()
         {
-            Debug.Log("DungeonAccumulator.Clear says: \"implement me\"");
+            var neighbours = new Vector2Int[] {
+                Vector2Int.up, Vector2Int.right,
+                Vector2Int.down, Vector2Int.left
+            };
+
+            var removedHalls = new HashSet<Vector2Int>();
+            var removedDoors = new HashSet<Vector2Int>();
+            var used = new HashSet<Vector2Int>();
+            var taskQueue = new Queue<Vector2Int>();
+            
+            foreach (var elem in map) {
+                taskQueue.Enqueue(elem.Key);
+
+                while (taskQueue.Count > 0) {
+                    var pos = taskQueue.Dequeue();
+
+                    if (!map.ContainsKey(pos)) continue;
+                    if (removedHalls.Contains(pos)) continue;
+                    used.Add(pos);
+
+                    var cnt = 0;
+                    var activeNeighbour = 100000 * Vector2Int.one;
+                    foreach (var neightbourPos in neighbours) {
+                        var bufpos = neightbourPos + pos;
+                        if (!map.ContainsKey(bufpos)) continue;
+                        if (removedHalls.Contains(bufpos)) continue;
+                        if (map[bufpos] == BlockType.Wall) continue; 
+
+                        activeNeighbour = bufpos;
+                        cnt++;
+                    }
+
+                    if (cnt <= 1) {
+                        if (map[pos] == BlockType.Door) {
+                            removedDoors.Add(pos);
+                            continue;
+                        } else {
+                            removedHalls.Add(pos);
+                            taskQueue.Enqueue(activeNeighbour);
+                        }
+                    }
+                }
+            }
+
+            foreach (var removedBlockPos in removedHalls) {
+                map.Remove(removedBlockPos);
+            }
+            foreach (var removedDoorPos in removedDoors) {
+                map[removedDoorPos] = BlockType.Wall;
+            }
         }
 
         private void AddWalls()
@@ -296,8 +345,6 @@ public struct WorldGenSystem : IEcsInitSystem
             var rVerticalStarts = new HashSet<Vector2Int>();
             var lVerticalFinishes = new HashSet<Vector2Int>();
             var rVerticalFinishes = new HashSet<Vector2Int>();
-
-            Debug.Log(tilemap.cellSize);
 
             foreach (var elem in quadredMap)
             {
