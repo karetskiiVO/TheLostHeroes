@@ -11,6 +11,4 @@ public struct RuntimeData
     public EcsEntity map;
 
     public RandomConfiguration randomConfiguration;
-
-    public List<EcsEntity> rooms;
 }
