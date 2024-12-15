@@ -38,7 +38,6 @@ public struct WorldGenSystem : IEcsInitSystem {
             var dungeonAccumulator = new DungeonAccumulator(
                 runtimeData.randomConfiguration,
                 mapComponent.tilemap,
-                mapComponent.renderer,
                 mapComponent.sprites
             );
             dungeonAccumulator.Genere();
@@ -56,15 +55,13 @@ public struct WorldGenSystem : IEcsInitSystem {
         private readonly RandomConfiguration randomDevice;
         private List<RoomInfo> roomsInfo = new List<RoomInfo>();
         
-        private Tilemap tilemap;
-        private TilemapRenderer renderer;
-        private SpriteAtlas sprites;
+        private readonly Tilemap tilemap;
+        private readonly SpriteAtlas sprites;
 
-        public DungeonAccumulator(RandomConfiguration randomDevice, Tilemap tilemap, TilemapRenderer renderer, SpriteAtlas sprites) {
+        public DungeonAccumulator(RandomConfiguration randomDevice, Tilemap tilemap, SpriteAtlas sprites) {
             this.randomDevice = randomDevice;
 
             this.tilemap = tilemap;
-            this.renderer = renderer;
             this.sprites = sprites;
         }
 
