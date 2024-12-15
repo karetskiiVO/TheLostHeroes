@@ -5,14 +5,19 @@ using System;
 using UnityEngine.Tilemaps;
 using UnityEngine.U2D;
 
-public struct WorldGenSystem : IEcsInitSystem {
+using Photon.Pun;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
+
+public struct WorldGenSystem : IEcsInitSystem
+{
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
     private StaticData staticData;      // подтягивается из Inject
     private RuntimeData runtimeData;    // подтягивается из Inject
 
     public EcsFilter<Map> filter;
 
-    private enum BlockType : uint {
+    private enum BlockType : uint
+    {
         WithFloor = 1,
         Hall = (1 << 1) | WithFloor,
         Room = (1 << 2) | WithFloor,
@@ -20,15 +25,18 @@ public struct WorldGenSystem : IEcsInitSystem {
         Wall = 1 << 4,
     }
 
-    private struct RoomInfo {
+    private struct RoomInfo
+    {
         public int xmin;
         public int ymin;
         public int xmax;
         public int ymax;
     }
 
-    public readonly void Init() {
-        foreach (var filteridx in filter) {
+    public readonly void Init()
+    {
+        foreach (var filteridx in filter)
+        {
             ref var mapEntity = ref filter.GetEntity(filteridx);
             ref var mapComponent = ref filter.Get1(filteridx);
             var mapRenderer = mapComponent.renderer;
@@ -36,6 +44,7 @@ public struct WorldGenSystem : IEcsInitSystem {
             /******************* Некоторые эксперименты на тему *******************/
 
             var dungeonAccumulator = new DungeonAccumulator(
+                this,
                 runtimeData.randomConfiguration,
                 mapComponent.tilemap,
                 mapComponent.sprites
@@ -45,28 +54,36 @@ public struct WorldGenSystem : IEcsInitSystem {
             dungeonAccumulator.Bake();
 
             // В этот момент можно вытащить информацию о комнатах
-        
+
             /************************** Эксперименты все **************************/
         }
+        Hashtable props = new Hashtable { { StaticData.PLAYER_LOADED_MAP, true } };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
     }
 
-    private class DungeonAccumulator {
+    private class DungeonAccumulator
+    {
+        WorldGenSystem parent;
         private Dictionary<Vector2Int, BlockType> map;
         private readonly RandomConfiguration randomDevice;
         private List<RoomInfo> roomsInfo = new List<RoomInfo>();
-        
+
         private readonly Tilemap tilemap;
         private readonly SpriteAtlas sprites;
 
-        public DungeonAccumulator(RandomConfiguration randomDevice, Tilemap tilemap, SpriteAtlas sprites) {
+        public DungeonAccumulator(WorldGenSystem parent, RandomConfiguration randomDevice, Tilemap tilemap, SpriteAtlas sprites)
+        {
+            this.parent = parent;
             this.randomDevice = randomDevice;
 
             this.tilemap = tilemap;
             this.sprites = sprites;
         }
 
-        public void Genere (int numEpochs = 10, float spawnRate = 0.7f, float deathRate = 0.05f, float roomSpawnRate = 0.6f, int minroomsCnt = 7) {
-            while (roomsInfo.Count < minroomsCnt) {
+        public void Genere(int numEpochs = 10, float spawnRate = 0.7f, float deathRate = 0.05f, float roomSpawnRate = 0.6f, int minroomsCnt = 7)
+        {
+            while (roomsInfo.Count < minroomsCnt)
+            {
                 roomsInfo.Clear();
 
                 map = new Dictionary<Vector2Int, BlockType> {
@@ -77,26 +94,35 @@ public struct WorldGenSystem : IEcsInitSystem {
                     NewHallDigger(Vector2Int.zero, 0)
                 };
 
-                for (var epoch = 0; epoch < numEpochs; epoch++) {
+                for (var epoch = 0; epoch < numEpochs; epoch++)
+                {
                     var removeIndices = new List<int>();
 
-                    for (var diggeridx = 0; diggeridx < diggers.Count; diggeridx++) {
+                    for (var diggeridx = 0; diggeridx < diggers.Count; diggeridx++)
+                    {
                         diggers[diggeridx].Step();
                         var currposition = diggers[diggeridx].position;
-                        
-                        for (uint dir = 0; dir < 4; dir++) {
+
+                        for (uint dir = 0; dir < 4; dir++)
+                        {
                             if (!diggers[diggeridx].SpawnNew(spawnRate, dir, out Vector2Int newpos)) continue;
 
-                            if (randomDevice.Binrary(roomSpawnRate)) {
+                            if (randomDevice.Binrary(roomSpawnRate))
+                            {
                                 diggers.Add(NewRoomDigger(newpos, dir));
-                            } else {
+                            }
+                            else
+                            {
                                 diggers.Add(NewHallDigger(newpos, dir));
                             }
                         }
 
-                        if (Math.Max(Math.Abs(currposition.x), Math.Abs(currposition.y)) >= 128) {
+                        if (Math.Max(Math.Abs(currposition.x), Math.Abs(currposition.y)) >= 128)
+                        {
                             diggers[diggeridx].Kill();
-                        } else {
+                        }
+                        else
+                        {
                             diggers[diggeridx].ProbabilityKill(deathRate);
                         }
 
@@ -104,53 +130,72 @@ public struct WorldGenSystem : IEcsInitSystem {
                         if (!diggers[diggeridx].Alive()) removeIndices.Add(diggeridx);
                     }
 
-                    for (var i = 0; i < removeIndices.Count; i++) {
+                    for (var i = 0; i < removeIndices.Count; i++)
+                    {
                         diggers.RemoveAt(removeIndices[i] - i);
                     }
                 }
             }
+            parent.runtimeData.rooms = new List<EcsEntity>();
+            foreach (RoomInfo r in roomsInfo)
+            {
+                EcsEntity roomEntity = parent.ecsWorld.NewEntity();//TODO: уточнить формулы
+                ref var room = ref roomEntity.Get<Room>();
+                var roomCollider = UnityEngine.Object.Instantiate(parent.staticData.roomPrefab, new Vector3((r.xmax + r.xmin) / 2f / 2.2f + 1.5f, (r.ymax + r.ymin) / 2f / 2.2f - 4.5f), Quaternion.identity).GetComponent<BoxCollider2D>();
+                room.collider = roomCollider;
+                roomCollider.size = new Vector2((r.xmax - r.xmin) / 2f, (r.ymax - r.ymin) / 2f);
+                parent.runtimeData.rooms.Add(roomEntity);
+            }
         }
 
-        public void Clear () {
+        public void Clear()
+        {
             Debug.Log("DungeonAccumulator.Clear says: \"implement me\"");
         }
 
-        private void AddWalls () {
+        private void AddWalls()
+        {
             List<Vector2Int> neightboursCoords = new List<Vector2Int>{
                 Vector2Int.left + Vector2Int.up  , Vector2Int.zero + Vector2Int.up  , Vector2Int.right + Vector2Int.up  ,
                 Vector2Int.left + Vector2Int.zero,                                    Vector2Int.right + Vector2Int.zero,
                 Vector2Int.left + Vector2Int.down, Vector2Int.zero + Vector2Int.down, Vector2Int.right + Vector2Int.down,
             };
-            
+
             var cellsCoords = new List<Vector2Int>(map.Keys);
 
-            foreach (var coord in cellsCoords) {
+            foreach (var coord in cellsCoords)
+            {
                 if (map[coord] == BlockType.Wall) continue;
 
-                foreach (var neightboursCoord in neightboursCoords) {
-                    if (!map.ContainsKey(coord + neightboursCoord)) {
+                foreach (var neightboursCoord in neightboursCoords)
+                {
+                    if (!map.ContainsKey(coord + neightboursCoord))
+                    {
                         map[coord + neightboursCoord] = BlockType.Wall;
                     }
                 }
             }
         }
 
-        public void DebugBake () {
+        public void DebugBake()
+        {
             AddWalls();
-            
+
             int xmin = int.MaxValue;
             int ymin = int.MaxValue;
             int xmax = int.MinValue;
             int ymax = int.MinValue;
 
-            foreach (var elem in map) {
+            foreach (var elem in map)
+            {
                 xmin = Math.Min(xmin, elem.Key.x);
                 ymin = Math.Min(ymin, elem.Key.y);
                 xmax = Math.Max(xmax, elem.Key.x);
                 ymax = Math.Max(ymax, elem.Key.y);
             }
 
-            var texture = new Texture2D(xmax - xmin + 1, ymax - ymin + 1) {
+            var texture = new Texture2D(xmax - xmin + 1, ymax - ymin + 1)
+            {
                 filterMode = FilterMode.Point
             };
 
@@ -161,7 +206,8 @@ public struct WorldGenSystem : IEcsInitSystem {
                 { BlockType.Room, Color.yellow },
             };
 
-            foreach (var elem in map) {
+            foreach (var elem in map)
+            {
                 texture.SetPixel(elem.Key.x - xmin, elem.Key.y - ymin, visualisationDict[elem.Value]);
             }
 
@@ -169,7 +215,8 @@ public struct WorldGenSystem : IEcsInitSystem {
             // return texture;
         }
 
-        public void Bake () {
+        public void Bake()
+        {
             // Все это слишком неэффективно и надо бы переделать
 
             AddWalls();
@@ -177,7 +224,8 @@ public struct WorldGenSystem : IEcsInitSystem {
             var xcent = 0;
             var ycent = 0;
 
-            foreach (var elem in map) {
+            foreach (var elem in map)
+            {
                 xcent += elem.Key.x;
                 ycent += elem.Key.y;
             }
@@ -193,13 +241,17 @@ public struct WorldGenSystem : IEcsInitSystem {
             };
 
             var loadedSprites = new Dictionary<int, Sprite>();
-            foreach (var idx in usedSpritesIndeces) {
+            foreach (var idx in usedSpritesIndeces)
+            {
                 loadedSprites[idx] = sprites.GetSprite("Tiles_" + idx.ToString());
             }
 
-            foreach (var elem in map) {
-                for (var dx = 0; dx < 4; dx++) {
-                    for (var dy = 0; dy < 4; dy++) {
+            foreach (var elem in map)
+            {
+                for (var dx = 0; dx < 4; dx++)
+                {
+                    for (var dy = 0; dy < 4; dy++)
+                    {
                         quadredMap.Add(4 * (elem.Key - pivot) + new Vector2Int(dx, dy), elem.Value);
                     }
                 }
@@ -256,30 +308,37 @@ public struct WorldGenSystem : IEcsInitSystem {
                 { 0b1111_1110, new Sprite[] {loadedSprites[135]}},
             };
 
-            var lVerticalStartsMasks   = new HashSet<int>{/*90, 135*/ 0b0000_1110, 0b0100_1110, 0b1111_1110};
-            var rVerticalStartsMasks   = new HashSet<int>{/*92, 134*/ 0b1000_0011, 0b1001_0011, 0b1111_1011};
-            var lVerticalFinishesMasks = new HashSet<int>{/*68, 94 */ 0b0011_1000, 0b0011_1001, 0b1011_1111};
-            var rVerticalFinishesMasks = new HashSet<int>{/*70, 93 */ 0b1110_0000, 0b1110_0100, 0b1110_1111};
+            var lVerticalStartsMasks = new HashSet<int> {/*90, 135*/ 0b0000_1110, 0b0100_1110, 0b1111_1110 };
+            var rVerticalStartsMasks = new HashSet<int> {/*92, 134*/ 0b1000_0011, 0b1001_0011, 0b1111_1011 };
+            var lVerticalFinishesMasks = new HashSet<int> {/*68, 94 */ 0b0011_1000, 0b0011_1001, 0b1011_1111 };
+            var rVerticalFinishesMasks = new HashSet<int> {/*70, 93 */ 0b1110_0000, 0b1110_0100, 0b1110_1111 };
 
             var lVerticalStarts = new HashSet<Vector2Int>();
             var rVerticalStarts = new HashSet<Vector2Int>();
             var lVerticalFinishes = new HashSet<Vector2Int>();
             var rVerticalFinishes = new HashSet<Vector2Int>();
 
-            foreach (var elem in quadredMap) {
-                if ((elem.Value & BlockType.WithFloor) != 0) {
+            foreach (var elem in quadredMap)
+            {
+                if ((elem.Value & BlockType.WithFloor) != 0)
+                {
                     int floormask = 0;
 
-                    for (int neightbourCnt = 0; neightbourCnt < neighbours.Length; neightbourCnt++) {
-                        if (!quadredMap.ContainsKey(elem.Key + neighbours[neightbourCnt])) {
+                    for (int neightbourCnt = 0; neightbourCnt < neighbours.Length; neightbourCnt++)
+                    {
+                        if (!quadredMap.ContainsKey(elem.Key + neighbours[neightbourCnt]))
+                        {
                             floormask |= 1 << neightbourCnt;
-                        } else if ((quadredMap[elem.Key + neighbours[neightbourCnt]] & BlockType.WithFloor) == 0) {
+                        }
+                        else if ((quadredMap[elem.Key + neighbours[neightbourCnt]] & BlockType.WithFloor) == 0)
+                        {
                             floormask |= 1 << neightbourCnt;
                         }
                     }
 
                     Tile tile = ScriptableObject.CreateInstance<Tile>();
-                    if (!floorSprites.ContainsKey(floormask)) {
+                    if (!floorSprites.ContainsKey(floormask))
+                    {
                         floormask = 0;
                     }
                     tile.sprite = floorSprites[floormask];
@@ -288,34 +347,41 @@ public struct WorldGenSystem : IEcsInitSystem {
                     tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y, 0), tile);
                 }
 
-                if (elem.Value == BlockType.Wall) {
+                if (elem.Value == BlockType.Wall)
+                {
                     int wallmask = 0;
 
-                    for (int neightbourCnt = 0; neightbourCnt < neighbours.Length; neightbourCnt++) {
-                        if (!quadredMap.ContainsKey(elem.Key + neighbours[neightbourCnt]))  {
+                    for (int neightbourCnt = 0; neightbourCnt < neighbours.Length; neightbourCnt++)
+                    {
+                        if (!quadredMap.ContainsKey(elem.Key + neighbours[neightbourCnt]))
+                        {
                             wallmask |= 1 << neightbourCnt;
-                        } else if (quadredMap[elem.Key + neighbours[neightbourCnt]] == BlockType.Wall) {
+                        }
+                        else if (quadredMap[elem.Key + neighbours[neightbourCnt]] == BlockType.Wall)
+                        {
                             wallmask |= 1 << neightbourCnt;
                         }
                     }
 
                     // TODO: Запечь статические коллайдеры для системы поиска маршрутов
 
-                    if (!wallSprites.ContainsKey(wallmask)) {
+                    if (!wallSprites.ContainsKey(wallmask))
+                    {
                         wallmask = 0b1111_1111;
                     }
                     var currWallSprites = wallSprites[wallmask];
 
-                    if (lVerticalStartsMasks.Contains(wallmask)) 
+                    if (lVerticalStartsMasks.Contains(wallmask))
                         lVerticalStarts.Add(elem.Key + new Vector2Int(0, wallSprites[wallmask].Length - 1));
-                    else if (rVerticalStartsMasks.Contains(wallmask)) 
+                    else if (rVerticalStartsMasks.Contains(wallmask))
                         rVerticalStarts.Add(elem.Key + new Vector2Int(0, wallSprites[wallmask].Length - 1));
-                    else if (lVerticalFinishesMasks.Contains(wallmask)) 
+                    else if (lVerticalFinishesMasks.Contains(wallmask))
                         lVerticalFinishes.Add(elem.Key + new Vector2Int(0, wallSprites[wallmask].Length - 1));
-                    else if (rVerticalFinishesMasks.Contains(wallmask)) 
-                        rVerticalFinishes.Add(elem.Key + new Vector2Int(0, wallSprites[wallmask].Length - 1)); 
+                    else if (rVerticalFinishesMasks.Contains(wallmask))
+                        rVerticalFinishes.Add(elem.Key + new Vector2Int(0, wallSprites[wallmask].Length - 1));
 
-                    for (var i = 0; i < currWallSprites.Length; i++) {
+                    for (var i = 0; i < currWallSprites.Length; i++)
+                    {
                         if (currWallSprites[i] == null) continue;
 
                         Tile tile = ScriptableObject.CreateInstance<Tile>();
@@ -328,10 +394,12 @@ public struct WorldGenSystem : IEcsInitSystem {
             }
 
             var leftWallSprite = sprites.GetSprite("Tiles_116");
-            foreach (var lstart in lVerticalStarts) {
+            foreach (var lstart in lVerticalStarts)
+            {
                 var pos = lstart + Vector2Int.up;
 
-                while (!lVerticalFinishes.Contains(pos)) {
+                while (!lVerticalFinishes.Contains(pos))
+                {
                     Tile tile = ScriptableObject.CreateInstance<Tile>();
                     tile.transform = Matrix4x4.TRS(new Vector3(pos.x, pos.y, 0) / 9, Quaternion.identity, Vector3.one / 9);
                     tile.sprite = leftWallSprite;
@@ -343,10 +411,12 @@ public struct WorldGenSystem : IEcsInitSystem {
             }
 
             var rightWallSprite = sprites.GetSprite("Tiles_115");
-            foreach (var rstart in rVerticalStarts) {
+            foreach (var rstart in rVerticalStarts)
+            {
                 var pos = rstart + Vector2Int.up;
 
-                while (!rVerticalFinishes.Contains(pos)) {
+                while (!rVerticalFinishes.Contains(pos))
+                {
                     Tile tile = ScriptableObject.CreateInstance<Tile>();
                     tile.transform = Matrix4x4.TRS(new Vector3(pos.x, pos.y, 0) / 9, Quaternion.identity, Vector3.one / 9);
                     tile.sprite = rightWallSprite;
@@ -363,77 +433,92 @@ public struct WorldGenSystem : IEcsInitSystem {
             // TODO: избавиться от магических констант в масштабе
         }
 
-        public HallDigger NewHallDigger (Vector2Int position, uint dir) {
+        public HallDigger NewHallDigger(Vector2Int position, uint dir)
+        {
             return new HallDigger(map, randomDevice, position, dir);
         }
 
-        public RoomDigger NewRoomDigger (Vector2Int position, uint dir) {
+        public RoomDigger NewRoomDigger(Vector2Int position, uint dir)
+        {
             return new RoomDigger(map, randomDevice, position, dir, roomsInfo);
         }
     }
 
-    private abstract class Digger {
+    private abstract class Digger
+    {
         public static readonly Vector2Int[] directions = { Vector2Int.right, Vector2Int.up, Vector2Int.left, Vector2Int.down };
-        
+
         protected uint prevdir = 10;
         public uint dir = 0;
         public Vector2Int position;
 
         protected bool alive = true;
-        
+
         protected RandomConfiguration randomDevice = null;
         protected Dictionary<Vector2Int, BlockType> map;
 
-        public abstract bool Step ();
-        public abstract bool SpawnNew (float spawnrate, uint newdir, out Vector2Int newpos);
-        public abstract bool ProbabilityKill (float deathrate);
+        public abstract bool Step();
+        public abstract bool SpawnNew(float spawnrate, uint newdir, out Vector2Int newpos);
+        public abstract bool ProbabilityKill(float deathrate);
 
-        public bool Alive () {
+        public bool Alive()
+        {
             return alive;
         }
-        public void Kill () {
+        public void Kill()
+        {
             alive = false;
         }
     }
 
-    private class HallDigger : Digger {
-        public HallDigger (Dictionary<Vector2Int, BlockType> map, RandomConfiguration randomDevice, Vector2Int position, uint dir) {
+    private class HallDigger : Digger
+    {
+        public HallDigger(Dictionary<Vector2Int, BlockType> map, RandomConfiguration randomDevice, Vector2Int position, uint dir)
+        {
             this.randomDevice = randomDevice;
 
             this.map = map;
 
             this.dir = dir % 4;
             this.position = position;
-            
+
             prevdir = dir;
         }
 
-        public override bool SpawnNew(float spawnrate, uint newdir, out Vector2Int newpos) {
+        public override bool SpawnNew(float spawnrate, uint newdir, out Vector2Int newpos)
+        {
             newpos = default;
-            if (newdir == dir || newdir == (prevdir + 2) % 4) {
+            if (newdir == dir || newdir == (prevdir + 2) % 4)
+            {
                 return false;
             }
 
             return randomDevice.Binrary(spawnrate);
         }
 
-        public override bool Step () {
+        public override bool Step()
+        {
             if (!alive) return alive;
 
             var len = Convert.ToInt32(randomDevice.NextNormal(6, 2));
             len = Math.Max(len, 3);
             len = Math.Min(len, 15);
 
-            if (map.ContainsKey(position) && map[position] == BlockType.Wall) {
+            if (map.ContainsKey(position) && map[position] == BlockType.Wall)
+            {
                 map[position] = BlockType.Door;
             }
 
-            for (var i = 0; i < len; i++) {
+            for (var i = 0; i < len; i++)
+            {
                 position += directions[dir];
 
-                if (map.ContainsKey(position)) {
-                    if (map[position] == BlockType.Wall) {
-                        if (map.ContainsKey(position + directions[dir]) && map[position + directions[dir]] == BlockType.Room) {
+                if (map.ContainsKey(position))
+                {
+                    if (map[position] == BlockType.Wall)
+                    {
+                        if (map.ContainsKey(position + directions[dir]) && map[position + directions[dir]] == BlockType.Room)
+                        {
                             map[position] = BlockType.Door;
                         }
                     }
@@ -445,12 +530,16 @@ public struct WorldGenSystem : IEcsInitSystem {
                 map.Add(position, BlockType.Hall);
             }
 
-            if (randomDevice.Binrary(0.4)) {
+            if (randomDevice.Binrary(0.4))
+            {
                 prevdir = dir;
 
-                if (randomDevice.Binrary(0.5)) {
+                if (randomDevice.Binrary(0.5))
+                {
                     dir += 1;
-                } else {
+                }
+                else
+                {
                     dir += 3;
                 }
 
@@ -459,9 +548,11 @@ public struct WorldGenSystem : IEcsInitSystem {
 
             return alive;
         }
-    
-        public override bool ProbabilityKill (float deathrate) {
-            if (randomDevice.Binrary(deathrate)) {
+
+        public override bool ProbabilityKill(float deathrate)
+        {
+            if (randomDevice.Binrary(deathrate))
+            {
                 alive = false;
             }
 
@@ -469,13 +560,15 @@ public struct WorldGenSystem : IEcsInitSystem {
         }
     }
 
-    private class RoomDigger : Digger {
+    private class RoomDigger : Digger
+    {
         private int roomWidth;
         private int roomDepth;
         private int offset;
         private RoomInfo roomInfo;
 
-        public RoomDigger (Dictionary<Vector2Int, BlockType> map, RandomConfiguration randomDevice, Vector2Int position, uint dir, List<RoomInfo> roomInfos) {
+        public RoomDigger(Dictionary<Vector2Int, BlockType> map, RandomConfiguration randomDevice, Vector2Int position, uint dir, List<RoomInfo> roomInfos)
+        {
             this.dir = dir % 4;
             this.position = position;
             this.randomDevice = randomDevice;
@@ -489,68 +582,84 @@ public struct WorldGenSystem : IEcsInitSystem {
             roomInfo.ymax = int.MinValue;
 
             alive = CreateRoom();
-            if (alive) {
+            if (alive)
+            {
                 roomInfos.Add(roomInfo);
             }
         }
 
-        private bool CreateRoom () {
+        private bool CreateRoom()
+        {
             var roomForward = directions[dir];
             var roomRight = directions[(dir + 3) % 4];
-        
+
             roomWidth = Convert.ToInt32(randomDevice.NextNormal(6, 2));
             roomDepth = Convert.ToInt32(randomDevice.NextNormal(6, 2));
-        
+
             roomWidth = Math.Min(Math.Max(3, roomWidth), 12);
             roomDepth = Math.Min(Math.Max(3, roomDepth), 12);
 
             offset = randomDevice.Next(roomWidth);
 
-            if (map.ContainsKey(position) && map[position] == BlockType.Wall) {
+            if (map.ContainsKey(position) && map[position] == BlockType.Wall)
+            {
                 position -= roomForward;
             }
 
-            for (var x = -offset; x < roomWidth - offset; x++) {
-                for (var y = 0; y < roomDepth; y++) {
+            for (var x = -offset; x < roomWidth - offset; x++)
+            {
+                for (var y = 0; y < roomDepth; y++)
+                {
                     var currpos = x * roomRight + y * roomForward + position + 2 * directions[dir];
 
-                    if (map.ContainsKey(currpos)) {
+                    if (map.ContainsKey(currpos))
+                    {
                         return false;
                     }
                 }
             }
 
-            for (var x = -offset; x < roomWidth - offset; x++) {
+            for (var x = -offset; x < roomWidth - offset; x++)
+            {
                 var currpos = x * roomRight - roomForward + position + 2 * roomForward;
-                
-                if (map.ContainsKey(currpos) && map[currpos] != BlockType.Wall) {
+
+                if (map.ContainsKey(currpos) && map[currpos] != BlockType.Wall)
+                {
                     return false;
                 }
             }
-            for (var x = -offset; x < roomWidth - offset; x++) {
+            for (var x = -offset; x < roomWidth - offset; x++)
+            {
                 var currpos = x * roomRight + roomDepth * roomForward + position + 2 * roomForward;
-                
-                if (map.ContainsKey(currpos) && map[currpos] != BlockType.Wall) {
+
+                if (map.ContainsKey(currpos) && map[currpos] != BlockType.Wall)
+                {
                     return false;
                 }
             }
-            for (var y = 0; y < roomDepth; y++) {
+            for (var y = 0; y < roomDepth; y++)
+            {
                 var currpos = (-offset - 1) * roomRight + y * roomForward + position + 2 * roomForward;
 
-                if (map.ContainsKey(currpos) && map[currpos] != BlockType.Wall) {
+                if (map.ContainsKey(currpos) && map[currpos] != BlockType.Wall)
+                {
                     return false;
                 }
             }
-            for (var y = 0; y < roomDepth; y++) {
-                var currpos = (roomWidth-offset) * roomRight + y * roomForward + position + 2 * roomForward;
+            for (var y = 0; y < roomDepth; y++)
+            {
+                var currpos = (roomWidth - offset) * roomRight + y * roomForward + position + 2 * roomForward;
 
-                if (map.ContainsKey(currpos) && map[currpos] != BlockType.Wall) {
+                if (map.ContainsKey(currpos) && map[currpos] != BlockType.Wall)
+                {
                     return false;
                 }
             }
 
-            for (var x = -offset; x < roomWidth - offset; x++) {
-                for (var y = 0; y < roomDepth; y++) {
+            for (var x = -offset; x < roomWidth - offset; x++)
+            {
+                for (var y = 0; y < roomDepth; y++)
+                {
                     var currpos = x * roomRight + y * roomForward + position + 2 * roomForward;
 
                     map[currpos] = BlockType.Room;
@@ -564,22 +673,26 @@ public struct WorldGenSystem : IEcsInitSystem {
                 }
             }
 
-            for (var x = -offset; x < roomWidth - offset; x++) {
+            for (var x = -offset; x < roomWidth - offset; x++)
+            {
                 var currpos = x * roomRight + (-1) * roomForward + position + 2 * roomForward;
-                
+
                 map[currpos] = BlockType.Wall;
             }
-            for (var x = -offset; x < roomWidth - offset; x++) {
+            for (var x = -offset; x < roomWidth - offset; x++)
+            {
                 var currpos = x * roomRight + roomDepth * roomForward + position + 2 * roomForward;
 
                 map[currpos] = BlockType.Wall;
             }
-            for (var y = 0; y < roomDepth; y++) {
-                var currpos = (- offset - 1) * roomRight + y * roomForward + position + 2 * roomForward;
+            for (var y = 0; y < roomDepth; y++)
+            {
+                var currpos = (-offset - 1) * roomRight + y * roomForward + position + 2 * roomForward;
 
                 map[currpos] = BlockType.Wall;
             }
-            for (var y = 0; y < roomDepth; y++) {
+            for (var y = 0; y < roomDepth; y++)
+            {
                 var currpos = (roomWidth - offset) * roomRight + y * roomForward + position + 2 * roomForward;
 
                 map[currpos] = BlockType.Wall;
@@ -589,38 +702,46 @@ public struct WorldGenSystem : IEcsInitSystem {
             return true;
         }
 
-        public override bool Step () {
+        public override bool Step()
+        {
             return alive;
         }
 
-        public override bool SpawnNew(float spawnrate, uint newdir, out Vector2Int newpos) {
+        public override bool SpawnNew(float spawnrate, uint newdir, out Vector2Int newpos)
+        {
             newpos = default;
             if (!alive) return false;
-            
+
             var roomForward = directions[dir];
             var roomRight = directions[(dir + 3) % 4];
 
-            if (newdir == (prevdir + 2) % 4) {
+            if (newdir == (prevdir + 2) % 4)
+            {
                 return false;
             }
 
-            if (newdir == dir) {
+            if (newdir == dir)
+            {
                 newpos = position + (2 + roomDepth) * roomForward + (randomDevice.Next(roomWidth) - offset) * roomRight;
                 return randomDevice.Binrary(spawnrate);
             }
-            
+
             newpos = position + (2 + randomDevice.Next(roomDepth)) * roomForward;
 
-            if (newdir == (dir + 1) % 4) {
-                newpos += (- offset - 1) * roomRight;
-            } if (newdir == (dir + 3) % 4) {
-                newpos += (- offset + roomWidth) * roomRight;
+            if (newdir == (dir + 1) % 4)
+            {
+                newpos += (-offset - 1) * roomRight;
+            }
+            if (newdir == (dir + 3) % 4)
+            {
+                newpos += (-offset + roomWidth) * roomRight;
             }
 
             return randomDevice.Binrary(spawnrate);
         }
 
-        public override bool ProbabilityKill (float deathrate) {
+        public override bool ProbabilityKill(float deathrate)
+        {
             alive = false;
 
             return alive;
