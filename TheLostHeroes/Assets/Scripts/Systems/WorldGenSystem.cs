@@ -38,7 +38,6 @@ public struct WorldGenSystem : IEcsInitSystem {
             var dungeonAccumulator = new DungeonAccumulator(
                 runtimeData.randomConfiguration,
                 mapComponent.tilemap,
-                mapComponent.renderer,
                 mapComponent.sprites
             );
             dungeonAccumulator.Genere();
@@ -48,18 +47,6 @@ public struct WorldGenSystem : IEcsInitSystem {
             // В этот момент можно вытащить информацию о комнатах
         
             /************************** Эксперименты все **************************/
-
-            // mapRenderer.
-
-            // mapRenderer.sprite = Sprite.Create(
-            //     texture,
-            //     new Rect(0, 0, texture.width, texture.height),
-            //     new Vector2(),
-            //     pixelsPerUnit
-            // );
-            
-            var mapTransform = mapRenderer.gameObject.GetComponent<Transform>();
-            // mapTransform.position -= 0.5f / pixelsPerUnit * new Vector3(texture.width, texture.height);
         }
     }
 
@@ -68,15 +55,13 @@ public struct WorldGenSystem : IEcsInitSystem {
         private readonly RandomConfiguration randomDevice;
         private List<RoomInfo> roomsInfo = new List<RoomInfo>();
         
-        private Tilemap tilemap;
-        private TilemapRenderer renderer;
-        private SpriteAtlas sprites;
+        private readonly Tilemap tilemap;
+        private readonly SpriteAtlas sprites;
 
-        public DungeonAccumulator(RandomConfiguration randomDevice, Tilemap tilemap, TilemapRenderer renderer, SpriteAtlas sprites) {
+        public DungeonAccumulator(RandomConfiguration randomDevice, Tilemap tilemap, SpriteAtlas sprites) {
             this.randomDevice = randomDevice;
 
             this.tilemap = tilemap;
-            this.renderer = renderer;
             this.sprites = sprites;
         }
 
@@ -185,7 +170,7 @@ public struct WorldGenSystem : IEcsInitSystem {
         }
 
         public void Bake () {
-            // // Все это слишком неэффективно и надо бы переделать
+            // Все это слишком неэффективно и надо бы переделать
 
             AddWalls();
 
@@ -201,12 +186,21 @@ public struct WorldGenSystem : IEcsInitSystem {
             ycent /= map.Count;
 
             var pivot = new Vector2Int(xcent, ycent);
-            var tripledMap = new Dictionary<Vector2Int, BlockType>();
+            var quadredMap = new Dictionary<Vector2Int, BlockType>();
+
+            var usedSpritesIndeces = new HashSet<int>{
+                27, 28, 29, 4, 5, 6, 49, 50, 51, 46, 24, 1, 131, 112, 90, 133, 114, 92, 69, 68, 70, 93, 94, 134, 135
+            };
+
+            var loadedSprites = new Dictionary<int, Sprite>();
+            foreach (var idx in usedSpritesIndeces) {
+                loadedSprites[idx] = sprites.GetSprite("Tiles_" + idx.ToString());
+            }
 
             foreach (var elem in map) {
-                for (var dx = 0; dx < 3; dx++) {
-                    for (var dy = 0; dy < 3; dy++) {
-                        tripledMap.Add(3 * (elem.Key - pivot) + new Vector2Int(dx, dy), elem.Value);
+                for (var dx = 0; dx < 4; dx++) {
+                    for (var dy = 0; dy < 4; dy++) {
+                        quadredMap.Add(4 * (elem.Key - pivot) + new Vector2Int(dx, dy), elem.Value);
                     }
                 }
             }
@@ -216,54 +210,157 @@ public struct WorldGenSystem : IEcsInitSystem {
                 Vector2Int.right + Vector2Int.down, Vector2Int.down, Vector2Int.left + Vector2Int.down, Vector2Int.left
             };
 
-            var floorSprites = new Dictionary<uint, Sprite> {
-                { 0b1100_0001, sprites.GetSprite("Tiles_27") },
-                { 0b1000_0001, sprites.GetSprite("Tiles_27") },
-                { 0b1100_0000, sprites.GetSprite("Tiles_27") },
-                { 0b0000_0000, sprites.GetSprite("Tiles_28") },
-                { 0b0001_1100, sprites.GetSprite("Tiles_29") },
-                { 0b0000_1100, sprites.GetSprite("Tiles_29") },
-                { 0b0001_1000, sprites.GetSprite("Tiles_29") },
-                { 0b1100_0111, sprites.GetSprite("Tiles_4")  },
-                { 0b1100_0110, sprites.GetSprite("Tiles_4")  },
-                { 0b0000_0111, sprites.GetSprite("Tiles_5")  },
-                { 0b0000_0011, sprites.GetSprite("Tiles_5")  },
-                { 0b0000_0110, sprites.GetSprite("Tiles_5")  },
-                { 0b0001_1111, sprites.GetSprite("Tiles_6")  },
-                { 0b0001_1011, sprites.GetSprite("Tiles_6")  },
-                { 0b1111_0001, sprites.GetSprite("Tiles_49") },
-                { 0b1011_0001, sprites.GetSprite("Tiles_49") },
-                { 0b0111_0000, sprites.GetSprite("Tiles_50") },
-                { 0b0011_0000, sprites.GetSprite("Tiles_50") },
-                { 0b0110_0000, sprites.GetSprite("Tiles_50") },
-                { 0b0111_1100, sprites.GetSprite("Tiles_51") },
-                { 0b0110_1100, sprites.GetSprite("Tiles_51") },
+            var floorSprites = new Dictionary<int, Sprite> {
+                { 0b1100_0001, loadedSprites[27] },
+                { 0b1000_0001, loadedSprites[27] },
+                { 0b1100_0000, loadedSprites[27] },
+                { 0b0000_0000, loadedSprites[28] },
+                { 0b0001_1100, loadedSprites[29] },
+                { 0b0000_1100, loadedSprites[29] },
+                { 0b0001_1000, loadedSprites[29] },
+                { 0b1100_0111, loadedSprites[4]  },
+                { 0b1100_0110, loadedSprites[4]  },
+                { 0b0000_0111, loadedSprites[5]  },
+                { 0b0000_0011, loadedSprites[5]  },
+                { 0b0000_0110, loadedSprites[5]  },
+                { 0b0001_1111, loadedSprites[6]  },
+                { 0b0001_1011, loadedSprites[6]  },
+                { 0b1111_0001, loadedSprites[49] },
+                { 0b1011_0001, loadedSprites[49] },
+                { 0b0111_0000, loadedSprites[50] },
+                { 0b0011_0000, loadedSprites[50] },
+                { 0b0110_0000, loadedSprites[50] },
+                { 0b0111_1100, loadedSprites[51] },
+                { 0b0110_1100, loadedSprites[51] },
             };
 
-            foreach (var elem in tripledMap) {
+            var wallSprites = new Dictionary<int, Sprite[]> {
+                { 0b1111_1111, new Sprite[] {} },
+                { 0b1000_1111, new Sprite[] {loadedSprites[46] , loadedSprites[24] , loadedSprites[1]}},
+                { 0b1100_1111, new Sprite[] {loadedSprites[46] , loadedSprites[24] , loadedSprites[1]}},
+                { 0b1001_1111, new Sprite[] {loadedSprites[46] , loadedSprites[24] , loadedSprites[1]}},
+                { 0b0000_1110, new Sprite[] {loadedSprites[131], loadedSprites[112], loadedSprites[90]}},
+                { 0b0100_1110, new Sprite[] {loadedSprites[131], loadedSprites[112], loadedSprites[90]}},
+                { 0b1000_0011, new Sprite[] {loadedSprites[133], loadedSprites[114], loadedSprites[92]}},
+                { 0b1001_0011, new Sprite[] {loadedSprites[133], loadedSprites[114], loadedSprites[92]}},
+                { 0b1111_1000, new Sprite[] {loadedSprites[69]}},
+                { 0b1111_1001, new Sprite[] {loadedSprites[69]}},
+                { 0b1111_1100, new Sprite[] {loadedSprites[69]}},
+                { 0b0011_1000, new Sprite[] {loadedSprites[68]}},
+                { 0b0011_1001, new Sprite[] {loadedSprites[68]}},
+                { 0b1110_0000, new Sprite[] {loadedSprites[70]}},
+                { 0b1110_0100, new Sprite[] {loadedSprites[70]}},
+                { 0b1110_1111, new Sprite[] {null, null, loadedSprites[93]}},
+                { 0b1011_1111, new Sprite[] {null, null, loadedSprites[94]}},
+                { 0b1111_1011, new Sprite[] {loadedSprites[134]}},
+                { 0b1111_1110, new Sprite[] {loadedSprites[135]}},
+            };
+
+            var lVerticalStartsMasks   = new HashSet<int>{/*90, 135*/ 0b0000_1110, 0b0100_1110, 0b1111_1110};
+            var rVerticalStartsMasks   = new HashSet<int>{/*92, 134*/ 0b1000_0011, 0b1001_0011, 0b1111_1011};
+            var lVerticalFinishesMasks = new HashSet<int>{/*68, 94 */ 0b0011_1000, 0b0011_1001, 0b1011_1111};
+            var rVerticalFinishesMasks = new HashSet<int>{/*70, 93 */ 0b1110_0000, 0b1110_0100, 0b1110_1111};
+
+            var lVerticalStarts = new HashSet<Vector2Int>();
+            var rVerticalStarts = new HashSet<Vector2Int>();
+            var lVerticalFinishes = new HashSet<Vector2Int>();
+            var rVerticalFinishes = new HashSet<Vector2Int>();
+
+            foreach (var elem in quadredMap) {
                 if ((elem.Value & BlockType.WithFloor) != 0) {
-                    uint floormask = 0;
+                    int floormask = 0;
 
                     for (int neightbourCnt = 0; neightbourCnt < neighbours.Length; neightbourCnt++) {
-                        if (!tripledMap.ContainsKey(elem.Key + neighbours[neightbourCnt])) {
-                            floormask |= (uint)1 << neightbourCnt;
-                        } else if ((tripledMap[elem.Key + neighbours[neightbourCnt]] & BlockType.WithFloor) == 0) {
-                            floormask |= (uint)1 << neightbourCnt;
+                        if (!quadredMap.ContainsKey(elem.Key + neighbours[neightbourCnt])) {
+                            floormask |= 1 << neightbourCnt;
+                        } else if ((quadredMap[elem.Key + neighbours[neightbourCnt]] & BlockType.WithFloor) == 0) {
+                            floormask |= 1 << neightbourCnt;
                         }
                     }
 
                     Tile tile = ScriptableObject.CreateInstance<Tile>();
-                    try {
-                        tile.sprite = floorSprites[floormask];
-                    } catch {
-                        tile.sprite = floorSprites[0];
+                    if (!floorSprites.ContainsKey(floormask)) {
+                        floormask = 0;
                     }
+                    tile.sprite = floorSprites[floormask];
+
                     tile.transform = Matrix4x4.TRS(new Vector3(elem.Key.x, elem.Key.y, 0) / 9, Quaternion.identity, Vector3.one / 9);
                     tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y, 0), tile);
                 }
+
+                if (elem.Value == BlockType.Wall) {
+                    int wallmask = 0;
+
+                    for (int neightbourCnt = 0; neightbourCnt < neighbours.Length; neightbourCnt++) {
+                        if (!quadredMap.ContainsKey(elem.Key + neighbours[neightbourCnt]))  {
+                            wallmask |= 1 << neightbourCnt;
+                        } else if (quadredMap[elem.Key + neighbours[neightbourCnt]] == BlockType.Wall) {
+                            wallmask |= 1 << neightbourCnt;
+                        }
+                    }
+
+                    // TODO: Запечь статические коллайдеры для системы поиска маршрутов
+
+                    if (!wallSprites.ContainsKey(wallmask)) {
+                        wallmask = 0b1111_1111;
+                    }
+                    var currWallSprites = wallSprites[wallmask];
+
+                    if (lVerticalStartsMasks.Contains(wallmask)) 
+                        lVerticalStarts.Add(elem.Key + new Vector2Int(0, wallSprites[wallmask].Length - 1));
+                    else if (rVerticalStartsMasks.Contains(wallmask)) 
+                        rVerticalStarts.Add(elem.Key + new Vector2Int(0, wallSprites[wallmask].Length - 1));
+                    else if (lVerticalFinishesMasks.Contains(wallmask)) 
+                        lVerticalFinishes.Add(elem.Key + new Vector2Int(0, wallSprites[wallmask].Length - 1));
+                    else if (rVerticalFinishesMasks.Contains(wallmask)) 
+                        rVerticalFinishes.Add(elem.Key + new Vector2Int(0, wallSprites[wallmask].Length - 1)); 
+
+                    for (var i = 0; i < currWallSprites.Length; i++) {
+                        if (currWallSprites[i] == null) continue;
+
+                        Tile tile = ScriptableObject.CreateInstance<Tile>();
+                        tile.transform = Matrix4x4.TRS(new Vector3(elem.Key.x, elem.Key.y + i, 0) / 9, Quaternion.identity, Vector3.one / 9);
+                        tile.sprite = currWallSprites[i];
+
+                        tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y + i, 0), tile);
+                    }
+                }
             }
-            
+
+            var leftWallSprite = sprites.GetSprite("Tiles_116");
+            foreach (var lstart in lVerticalStarts) {
+                var pos = lstart + Vector2Int.up;
+
+                while (!lVerticalFinishes.Contains(pos)) {
+                    Tile tile = ScriptableObject.CreateInstance<Tile>();
+                    tile.transform = Matrix4x4.TRS(new Vector3(pos.x, pos.y, 0) / 9, Quaternion.identity, Vector3.one / 9);
+                    tile.sprite = leftWallSprite;
+
+                    tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), tile);
+
+                    pos += Vector2Int.up;
+                }
+            }
+
+            var rightWallSprite = sprites.GetSprite("Tiles_115");
+            foreach (var rstart in rVerticalStarts) {
+                var pos = rstart + Vector2Int.up;
+
+                while (!rVerticalFinishes.Contains(pos)) {
+                    Tile tile = ScriptableObject.CreateInstance<Tile>();
+                    tile.transform = Matrix4x4.TRS(new Vector3(pos.x, pos.y, 0) / 9, Quaternion.identity, Vector3.one / 9);
+                    tile.sprite = rightWallSprite;
+
+                    tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), tile);
+
+                    pos += Vector2Int.up;
+                }
+            }
+
             tilemap.RefreshAllTiles();
+
+            // TODO: пересчитать координаты комнат
+            // TODO: избавиться от магических констант в масштабе
         }
 
         public HallDigger NewHallDigger (Vector2Int position, uint dir) {
