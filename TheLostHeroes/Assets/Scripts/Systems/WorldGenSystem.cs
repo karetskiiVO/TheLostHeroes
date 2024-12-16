@@ -143,7 +143,6 @@ public struct WorldGenSystem : IEcsInitSystem
                     }
                 }
             }
-            parent.runtimeData.rooms = new List<EcsEntity>();
         }
 
         public void Clear()
@@ -465,13 +464,15 @@ public struct WorldGenSystem : IEcsInitSystem
             walkable_tilemap.RefreshAllTiles();
             obstacle_tilemap.RefreshAllTiles();
 
-
             GameObject.Find("NavMesh")
                 .GetComponent<NavMeshSurface>()
                 .BuildNavMesh();
 
             // TODO: пересчитать координаты комнат
             // TODO: избавиться от магических констант в масштабе
+            
+            parent.runtimeData.rooms = new List<EcsEntity>();
+            var roomGroup = new GameObject("RoomGroup");
 
             foreach (RoomInfo r in roomsInfo)
             {
@@ -479,11 +480,12 @@ public struct WorldGenSystem : IEcsInitSystem
                 ref var room = ref roomEntity.Get<Room>();
                 var roomCollider = UnityEngine.Object.Instantiate(
                     parent.staticData.roomPrefab, 
-                    tilemap.LocalToWorld(new Vector3(
+                    new Vector3(
                         (r.xmax + r.xmin) * 1.0f / 2,
                         (r.ymax + r.ymin) * 1.0f / 2
-                    )), 
-                    Quaternion.identity
+                    ),
+                    Quaternion.identity,
+                    roomGroup.transform
                 ).GetComponent<BoxCollider2D>();
 
                 room.collider = roomCollider;

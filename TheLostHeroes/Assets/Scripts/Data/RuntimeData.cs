@@ -11,5 +11,6 @@ public struct RuntimeData
     //stuff only created in runtime
     public EcsEntity map;
 
+    public List<EcsEntity> rooms;
     public RandomConfiguration randomConfiguration;
 }
