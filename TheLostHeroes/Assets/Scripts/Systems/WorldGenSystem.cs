@@ -7,8 +7,6 @@ using UnityEngine.U2D;
 
 using Photon.Pun;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
-using Unity.VisualScripting;
-using ExitGames.Client.Photon;
 using NavMeshPlus.Components;
 
 public struct WorldGenSystem : IEcsInitSystem
