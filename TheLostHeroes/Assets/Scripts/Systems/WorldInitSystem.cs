@@ -4,6 +4,7 @@ using UnityEngine;
 using Leopotam.Ecs;
 using UnityEngine.AI;
 using UnityEngine.Tilemaps;
+using Photon.Pun;
 
 public struct WorldInitSystem : IEcsInitSystem
 {
@@ -14,25 +15,14 @@ public struct WorldInitSystem : IEcsInitSystem
 
     public void Init()
     {
+        NetEntitySyncroniser.instance.ecsWorld = ecsWorld;
+        NetEntitySyncroniser.instance.staticData = staticData;
         //Create the map
         runtimeData.map = ecsWorld.NewEntity();
         ref var map = ref runtimeData.map.Get<Map>();
-        var mapObject = GameObject.Find("map");
-        map.tilemap = mapObject.GetComponent<Tilemap>();
-        map.renderer = mapObject.GetComponent<TilemapRenderer>();
-        map.sprites = mapObject.GetComponent<SpriteContainer>().sprites;
-
-        //create a random pawn
-        var pawnEntity = ecsWorld.NewEntity();
-
-        ref var pawn = ref pawnEntity.Get<Pawn>();
-        pawn.speed = 1;
-        pawnEntity.Get<Health>().hp = 100;
-        pawnEntity.Get<Attack>().atk = 10;
-        pawnEntity.Get<Owned>().owner = -1;
-        pawnEntity.Get<KnightPawn>(); // и флаг что это рыцарь
-
-        var pawnObject = Object.Instantiate(staticData.pawnPrefab, Vector3.zero, Quaternion.identity);
-        pawn.agent = pawnObject.GetComponent<NavMeshAgent>();
+        var gridTransform = GameObject.Find("Grid").transform;
+        map.walkable_tilemap = gridTransform.Find("map_walkable").GetComponent<Tilemap>();
+        map.obstacle_tilemap = gridTransform.Find("map_obstacle").GetComponent<Tilemap>();
+        map.sprites = gridTransform.GetComponent<SpriteContainer>().sprites;
     }
 }

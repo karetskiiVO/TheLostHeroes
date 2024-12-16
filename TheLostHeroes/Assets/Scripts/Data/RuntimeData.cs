@@ -4,6 +4,7 @@ using Leopotam.Ecs;
 using System;
 using System.Text;
 using UnityEngine;
+using NavMeshPlus.Components;
 
 public struct RuntimeData
 {
@@ -11,6 +12,4 @@ public struct RuntimeData
     public EcsEntity map;
 
     public RandomConfiguration randomConfiguration;
-
-    public List<EcsEntity> rooms;
 }

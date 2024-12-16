@@ -6,8 +6,8 @@ using UnityEngine.Tilemaps;
 using UnityEngine.U2D;
 
 public struct Map {
-    public Tilemap tilemap;
-    public TilemapRenderer renderer;
+    public Tilemap walkable_tilemap;
+    public Tilemap obstacle_tilemap;
     public SpriteAtlas sprites;
 
     public List<EcsEntity> rooms;
