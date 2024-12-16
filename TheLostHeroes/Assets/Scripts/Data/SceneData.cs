@@ -12,4 +12,6 @@ public class SceneData : MonoBehaviour {
     public class GameResources {
     }
     public GameResources gameResources;
+
+    public DescriberBehavour sceneDescriber;
 }

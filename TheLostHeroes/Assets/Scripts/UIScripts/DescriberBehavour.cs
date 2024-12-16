@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DescriptorBehavour : MonoBehaviour {
+public class DescriberBehavour : MonoBehaviour {
     [SerializeField]private Text entityName;
     [SerializeField]private Text entityDescription;
 

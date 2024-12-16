@@ -60,7 +60,7 @@ public struct WorldGenSystem : IEcsInitSystem
 
             /************************** Эксперименты все **************************/
         }
-        Hashtable props = new Hashtable { { StaticData.PLAYER_LOADED_MAP, true } };
+        Hashtable props = new() { { StaticData.PLAYER_LOADED_MAP, true } };
         PhotonNetwork.LocalPlayer.SetCustomProperties(props);
     }
 
@@ -476,7 +476,7 @@ public struct WorldGenSystem : IEcsInitSystem
             {
                 EcsEntity roomEntity = parent.ecsWorld.NewEntity();//TODO: уточнить формулы
                 ref var room = ref roomEntity.Get<Room>();
-                var roomCollider = UnityEngine.Object.Instantiate(
+                var roomGameObject = UnityEngine.Object.Instantiate(
                     parent.staticData.roomPrefab, 
                     new Vector3(
                         2 * (r.xmax + r.xmin) + 2.5f,
@@ -484,8 +484,9 @@ public struct WorldGenSystem : IEcsInitSystem
                     ),
                     Quaternion.identity,
                     roomGroup.transform
-                ).GetComponent<BoxCollider2D>();
+                );
 
+                var roomCollider = roomGameObject.GetComponent<BoxCollider2D>();
                 room.collider = roomCollider;
                 roomCollider.size = new Vector2(4 * (r.xmax - r.xmin + 1), 4 * (r.ymax - r.ymin + 1));
                 parent.runtimeData.rooms.Add(roomEntity);
