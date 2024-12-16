@@ -481,15 +481,15 @@ public struct WorldGenSystem : IEcsInitSystem
                 var roomCollider = UnityEngine.Object.Instantiate(
                     parent.staticData.roomPrefab, 
                     new Vector3(
-                        (r.xmax + r.xmin) * 1.0f / 2,
-                        (r.ymax + r.ymin) * 1.0f / 2
+                        2 * (r.xmax + r.xmin) + 2.5f,
+                        2 * (r.ymax + r.ymin) + 2.5f
                     ),
                     Quaternion.identity,
                     roomGroup.transform
                 ).GetComponent<BoxCollider2D>();
 
                 room.collider = roomCollider;
-                roomCollider.size = new Vector2((r.xmax - r.xmin), (r.ymax - r.ymin));
+                roomCollider.size = new Vector2(4 * (r.xmax - r.xmin + 1), 4 * (r.ymax - r.ymin + 1));
                 parent.runtimeData.rooms.Add(roomEntity);
             }
         }
