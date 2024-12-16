@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.h8man.2d.navmeshplus": "https://github.com/h8man/NavMeshPlus.git",
     "com.leopotam.ecs": "https://github.com/Leopotam/ecs.git",
     "com.unity.2d.animation": "9.1.2",
     "com.unity.2d.pixel-perfect": "5.0.3",

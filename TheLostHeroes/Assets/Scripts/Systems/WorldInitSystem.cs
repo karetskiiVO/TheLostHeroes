@@ -20,9 +20,9 @@ public struct WorldInitSystem : IEcsInitSystem
         //Create the map
         runtimeData.map = ecsWorld.NewEntity();
         ref var map = ref runtimeData.map.Get<Map>();
-        var mapObject = GameObject.Find("map");
-        map.tilemap = mapObject.GetComponent<Tilemap>();
-        map.renderer = mapObject.GetComponent<TilemapRenderer>();
-        map.sprites = mapObject.GetComponent<SpriteContainer>().sprites;
+        var gridTransform = GameObject.Find("Grid").transform;
+        map.walkable_tilemap = gridTransform.Find("map_walkable").GetComponent<Tilemap>();
+        map.obstacle_tilemap = gridTransform.Find("map_obstacle").GetComponent<Tilemap>();
+        map.sprites = gridTransform.GetComponent<SpriteContainer>().sprites;
     }
 }
