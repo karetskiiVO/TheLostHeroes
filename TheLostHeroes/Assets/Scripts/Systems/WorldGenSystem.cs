@@ -9,12 +9,15 @@ using Photon.Pun;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 using Unity.VisualScripting;
 using ExitGames.Client.Photon;
+using NavMeshPlus.Components;
 
 public struct WorldGenSystem : IEcsInitSystem
 {
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
     private StaticData staticData;      // подтягивается из Inject
     private RuntimeData runtimeData;    // подтягивается из Inject
+    private const float kRoomSizeNormalizationCoefficient = 1f;  // вычисления производятся для 
+                                                                 // коэффициента 1/9, а рендерится все с коэффициентом 1/5
 
     public EcsFilter<Map> filter;
 
@@ -41,14 +44,14 @@ public struct WorldGenSystem : IEcsInitSystem
         {
             ref var mapEntity = ref filter.GetEntity(filteridx);
             ref var mapComponent = ref filter.Get1(filteridx);
-            var mapRenderer = mapComponent.renderer;
 
             /******************* Некоторые эксперименты на тему *******************/
 
             var dungeonAccumulator = new DungeonAccumulator(
                 this,
                 runtimeData.randomConfiguration,
-                mapComponent.tilemap,
+                mapComponent.walkable_tilemap,
+                mapComponent.obstacle_tilemap,
                 mapComponent.sprites
             );
             dungeonAccumulator.Genere();
@@ -70,15 +73,17 @@ public struct WorldGenSystem : IEcsInitSystem
         private readonly RandomConfiguration randomDevice;
         private List<RoomInfo> roomsInfo = new List<RoomInfo>();
 
-        private readonly Tilemap tilemap;
+        private readonly Tilemap walkable_tilemap;
+        private readonly Tilemap obstacle_tilemap;
         private readonly SpriteAtlas sprites;
 
-        public DungeonAccumulator(WorldGenSystem parent, RandomConfiguration randomDevice, Tilemap tilemap, SpriteAtlas sprites)
+        public DungeonAccumulator(WorldGenSystem parent, RandomConfiguration randomDevice, Tilemap walkable_tilemap, Tilemap obstacle_tilemap, SpriteAtlas sprites)
         {
             this.parent = parent;
             this.randomDevice = randomDevice;
 
-            this.tilemap = tilemap;
+            this.walkable_tilemap = walkable_tilemap;
+            this.obstacle_tilemap = obstacle_tilemap;
             this.sprites = sprites;
         }
 
@@ -142,10 +147,10 @@ public struct WorldGenSystem : IEcsInitSystem
             {
                 Room room = new Room();
                 room.netFields = new Room.Networked();
-                room.netFields.sizex = (r.xmax - r.xmin) / 2f;
-                room.netFields.sizey = (r.ymax - r.ymin) / 2f;
-                room.netFields.posx = (r.xmax + r.xmin) / 2f / 2.2f;
-                room.netFields.posy = (r.ymax + r.ymin) / 2f / 2.2f;
+                room.netFields.sizex = (r.xmax - r.xmin) / 2f * kRoomSizeNormalizationCoefficient;
+                room.netFields.sizey = (r.ymax - r.ymin) / 2f * kRoomSizeNormalizationCoefficient;
+                room.netFields.posx = (r.xmax + r.xmin) / 2f / 2.2f * kRoomSizeNormalizationCoefficient;
+                room.netFields.posy = (r.ymax + r.ymin) / 2f / 2.2f * kRoomSizeNormalizationCoefficient;
                 PhotonView.Get(NetEntitySyncroniser.instance).RPC("CreateWithComponents", RpcTarget.All, new object[] { NetEntitySyncroniser.instance.nextID++,
                     new object[] { room } });
             }
@@ -255,7 +260,7 @@ public struct WorldGenSystem : IEcsInitSystem
                 {
                     for (var dy = 0; dy < 4; dy++)
                     {
-                        quadredMap.Add(4 * (elem.Key - pivot) + new Vector2Int(dx, dy), elem.Value);
+                        quadredMap.Add(4 * elem.Key + new Vector2Int(dx, dy), elem.Value);
                     }
                 }
             }
@@ -321,8 +326,6 @@ public struct WorldGenSystem : IEcsInitSystem
             var lVerticalFinishes = new HashSet<Vector2Int>();
             var rVerticalFinishes = new HashSet<Vector2Int>();
 
-            Debug.Log(tilemap.cellSize);
-
             foreach (var elem in quadredMap)
             {
                 if ((elem.Value & BlockType.WithFloor) != 0)
@@ -349,7 +352,7 @@ public struct WorldGenSystem : IEcsInitSystem
                     tile.sprite = floorSprites[floormask];
 
                     tile.transform = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
-                    tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y, 0), tile);
+                    walkable_tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y, 0), tile);
                 }
 
                 if (elem.Value == BlockType.Wall)
@@ -393,12 +396,10 @@ public struct WorldGenSystem : IEcsInitSystem
                         tile.transform = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
                         tile.sprite = currWallSprites[i];
 
-                        tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y + i, 0), tile);
+                        obstacle_tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y + i, 0), tile);
                     }
                 }
             }
-
-            Debug.Log(tilemap.cellSize);
 
             var leftWallSprite = sprites.GetSprite("Tiles_116");
             foreach (var lstart in lVerticalStarts)
@@ -411,7 +412,7 @@ public struct WorldGenSystem : IEcsInitSystem
                     tile.transform = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
                     tile.sprite = leftWallSprite;
 
-                    tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), tile);
+                    obstacle_tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), tile);
 
                     pos += Vector2Int.up;
                 }
@@ -428,13 +429,19 @@ public struct WorldGenSystem : IEcsInitSystem
                     tile.transform = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
                     tile.sprite = rightWallSprite;
 
-                    tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), tile);
+                    obstacle_tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), tile);
 
                     pos += Vector2Int.up;
                 }
             }
 
-            tilemap.RefreshAllTiles();
+            walkable_tilemap.RefreshAllTiles();
+            obstacle_tilemap.RefreshAllTiles();
+
+
+            GameObject.Find("NavMesh")
+                .GetComponent<NavMeshSurface>()
+                .BuildNavMesh();
 
             // TODO: пересчитать координаты комнат
             // TODO: избавиться от магических констант в масштабе
