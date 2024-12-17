@@ -154,11 +154,13 @@ public struct WorldGenSystem : IEcsInitSystem
             var removedDoors = new HashSet<Vector2Int>();
             var used = new HashSet<Vector2Int>();
             var taskQueue = new Queue<Vector2Int>();
-            
-            foreach (var elem in map) {
+
+            foreach (var elem in map)
+            {
                 taskQueue.Enqueue(elem.Key);
 
-                while (taskQueue.Count > 0) {
+                while (taskQueue.Count > 0)
+                {
                     var pos = taskQueue.Dequeue();
 
                     if (!map.ContainsKey(pos)) continue;
@@ -167,21 +169,26 @@ public struct WorldGenSystem : IEcsInitSystem
 
                     var cnt = 0;
                     var activeNeighbour = 100000 * Vector2Int.one;
-                    foreach (var neightbourPos in neighbours) {
+                    foreach (var neightbourPos in neighbours)
+                    {
                         var bufpos = neightbourPos + pos;
                         if (!map.ContainsKey(bufpos)) continue;
                         if (removedHalls.Contains(bufpos)) continue;
-                        if (map[bufpos] == BlockType.Wall) continue; 
+                        if (map[bufpos] == BlockType.Wall) continue;
 
                         activeNeighbour = bufpos;
                         cnt++;
                     }
 
-                    if (cnt <= 1) {
-                        if (map[pos] == BlockType.Door) {
+                    if (cnt <= 1)
+                    {
+                        if (map[pos] == BlockType.Door)
+                        {
                             removedDoors.Add(pos);
                             continue;
-                        } else {
+                        }
+                        else
+                        {
                             removedHalls.Add(pos);
                             taskQueue.Enqueue(activeNeighbour);
                         }
@@ -189,10 +196,12 @@ public struct WorldGenSystem : IEcsInitSystem
                 }
             }
 
-            foreach (var removedBlockPos in removedHalls) {
+            foreach (var removedBlockPos in removedHalls)
+            {
                 map.Remove(removedBlockPos);
             }
-            foreach (var removedDoorPos in removedDoors) {
+            foreach (var removedDoorPos in removedDoors)
+            {
                 map[removedDoorPos] = BlockType.Wall;
             }
         }
@@ -468,46 +477,20 @@ public struct WorldGenSystem : IEcsInitSystem
 
             // TODO: пересчитать координаты комнат
             // TODO: избавиться от магических констант в масштабе
-            
+
             parent.runtimeData.rooms = new List<EcsEntity>();
             var roomGroup = new GameObject("RoomGroup");
 
 
-            foreach (RoomInfo r in roomsInfo)  {
+            foreach (RoomInfo r in roomsInfo)
+            {
                 Room room = new Room();
                 room.netFields = new Room.Networked();
                 room.netFields.sizex = 4 * (r.xmax - r.xmin + 1);
                 room.netFields.sizey = 4 * (r.ymax - r.ymin + 1);
                 room.netFields.posx = 2 * (r.xmax + r.xmin) + 2.5f;
                 room.netFields.posy = 2 * (r.ymax + r.ymin) + 2.5f;
-                PhotonView.Get(NetEntitySyncroniser.instance).RPC(
-                    "CreateWithComponents", 
-                    RpcTarget.All, 
-                    new object[] { 
-                        NetEntitySyncroniser.instance.nextID++,
-                        new object[] { room }
-                    }
-                );
-            }
-
-            foreach (RoomInfo r in roomsInfo)
-            {
-                EcsEntity roomEntity = parent.ecsWorld.NewEntity();
-                ref var room = ref roomEntity.Get<Room>();
-                var roomGameObject = UnityEngine.Object.Instantiate(
-                    parent.staticData.roomPrefab, 
-                    new Vector3(
-                        2 * (r.xmax + r.xmin) + 2.5f,
-                        2 * (r.ymax + r.ymin) + 2.5f
-                    ),
-                    Quaternion.identity,
-                    roomGroup.transform
-                );
-
-                var roomCollider = roomGameObject.GetComponent<BoxCollider2D>();
-                room.collider = roomCollider;
-                roomCollider.size = new Vector2(4 * (r.xmax - r.xmin + 1), 4 * (r.ymax - r.ymin + 1));
-                parent.runtimeData.rooms.Add(roomEntity);
+                NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { room });
             }
         }
 

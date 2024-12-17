@@ -32,8 +32,7 @@ public struct MasterInitSystem : IEcsInitSystem
             owned.owner = -1;
             KnightPawn tag = new KnightPawn();
 
-            PhotonView.Get(NetEntitySyncroniser.instance).RPC("CreateWithComponents", RpcTarget.All, new object[] { pawn.netFields.id,
-                    new object[] { pawn, health, owned, tag } });
+            NetEntitySyncroniser.instance.EmitCreate(pawn.netFields.id, new object[] { pawn, health, owned, tag });
             NetEntitySyncroniser.instance.nextID++;
         }
     }
