@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Leopotam.Ecs;
 
+using Photon.Pun;
+
 public class ECS : MonoBehaviour
 {
     public StaticData configuration;
@@ -19,32 +21,34 @@ public class ECS : MonoBehaviour
             randomConfiguration = new RandomConfiguration(sceneData.seed),
         };
 
-        systems
-            // Системы с основной логикой должны
-            // быть зарегистрированы здесь, порядок важен:
-            // .Add (new TestSystem1 ())
-            // .Add (new TestSystem2 ())
+        if (PhotonNetwork.IsMasterClient)
+        {
+            systems
+                .Add(new WorldInitSystem())
+                .Add(new WorldGenSystem())
+                .Add(new MasterInitSystem())
+                .Add(new PawnMoveSystem())
+                .Add(new PawnAISystem())
 
-            // OneFrame-компоненты должны быть зарегистрированы
-            // в общем списке систем, порядок важен:
-            // .OneFrame<TestComponent1> ()
-            // .OneFrame<TestComponent2> ()
+                .Inject(configuration)
+                .Inject(sceneData)
+                .Inject(runtimeData)
 
-            // Инъекция должна быть произведена здесь,
-            // порядок не важен:
-            // .Inject (new CameraService ())
-            // .Inject (new NavMeshSupport ())
+                .Init();
+        }
+        else
+        {
+            systems
+                .Add(new WorldInitSystem())
+                .Add(new WorldGenSystem())
+                .Add(new PawnMoveSystem())
 
-            .Add(new WorldInitSystem())
-            .Add(new WorldGenSystem())
-            .Add(new MasterInitSystem())
-            .Add(new PawnMoveSystem())
+                .Inject(configuration)
+                .Inject(sceneData)
+                .Inject(runtimeData)
 
-            .Inject(configuration)
-            .Inject(sceneData)
-            .Inject(runtimeData)
-
-            .Init();
+                .Init();
+        }
     }
 
 
