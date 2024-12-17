@@ -3,13 +3,19 @@ using System.Collections.Generic;
 using Leopotam.Ecs;
 using UnityEngine;
 
-public class TaskAttack : IEcsIgnoreInFilter { }
-public class TaskDefend : IEcsIgnoreInFilter { }
-public class TaskExplore : IEcsIgnoreInFilter { }
-public class TaskInteract : IEcsIgnoreInFilter { }
+public struct TaskAttack : IEcsIgnoreInFilter { }
+public struct TaskDefend : IEcsIgnoreInFilter { }
+public struct TaskExplore : IEcsIgnoreInFilter { }
+public struct TaskInteract : IEcsIgnoreInFilter { }
 
-public class Task : MonoBehaviour
+public struct Task
 {
-    public EcsEntity target;
-    public int reward;
+    [System.Serializable]
+    public struct Networked
+    {
+        public int targetID;
+        public int reward;
+    }
+    public Networked netFields;
+    public NetIDHolder instance;
 }

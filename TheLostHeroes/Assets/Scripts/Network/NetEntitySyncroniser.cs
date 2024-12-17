@@ -17,7 +17,7 @@ public class NetEntitySyncroniser : MonoBehaviour
     public static NetEntitySyncroniser instance;
     public EcsWorld ecsWorld;
     public StaticData staticData;
-    Dictionary<int, EcsEntity> entities = new Dictionary<int, EcsEntity>();
+    public Dictionary<int, EcsEntity> entities = new Dictionary<int, EcsEntity>();
 
     void Awake()
     {
@@ -57,6 +57,19 @@ public class NetEntitySyncroniser : MonoBehaviour
             pawn.self.transform.position = new Vector3(pawn.netFields.x, pawn.netFields.y);
         }
     }
+    public void EmitCreate(int id, object[] components)
+    {
+        PhotonView.Get(this).RPC("CreateWithComponents", RpcTarget.All, new object[] { id, components });
+    }
+
+    public void EmitUpdate(int id, object[] components)
+    {
+        PhotonView.Get(this).RPC("UpdateComponents", RpcTarget.All, new object[] { id, components });
+    }
+    public void EmitDestroy(int id)
+    {
+        PhotonView.Get(this).RPC("DestroyEntity", RpcTarget.All, new object[] { id });
+    }
 
     [PunRPC]
     public void CreateWithComponents(int id, object[] components)
@@ -80,5 +93,16 @@ public class NetEntitySyncroniser : MonoBehaviour
             typeof(NetEntitySyncroniser).GetMethod("updateComponent").MakeGenericMethod(components[i].GetType()).Invoke(this, new object[] { entity, components[i] });
         }
 
+    }
+    [PunRPC]
+    public void DestroyEntity(int id)
+    {
+        EcsEntity entity = entities[id];
+        entities.Remove(id);
+        if (entity.Has<Task>())
+        {
+            Destroy(entity.Get<Task>().instance.gameObject);
+        }
+        entity.Destroy();
     }
 }

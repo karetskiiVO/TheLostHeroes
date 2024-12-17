@@ -16,6 +16,9 @@ public struct Pawn
         public float x;
         public float y;
         public int id;
+        public string objective;
+        public float targetX;
+        public float targetY;
     }
     public Networked netFields;
 
