@@ -19,13 +19,29 @@ public class NetEntitySyncroniser : MonoBehaviour
     public StaticData staticData;
     public Dictionary<int, EcsEntity> entities = new Dictionary<int, EcsEntity>();
 
+    public static EcsEntity GetEntity(int id)
+    {
+        return instance.entities[id];
+    }
+
+    public static ref T MustGetComponent<T>(int id) where T : struct
+    {
+        EcsEntity entity = instance.entities[id];
+        if (!entity.Has<T>())
+        {
+            throw new Exception("entity with id " + id.ToString() + " expected to have component " + typeof(T).ToString() + ", but does not");
+        }
+        ref var res = ref instance.entities[id].Get<T>();
+        return ref res;
+    }
+
     void Awake()
     {
         instance = this;
         NetEntitySerializer.Register();
     }
 
-    public void addComponent<T>(EcsEntity entity, object component) where T : struct
+    public void addComponent<T>(EcsEntity entity, object component, int id) where T : struct
     {
         ref T comp = ref entity.Get<T>();
         comp = (T)component;
@@ -34,15 +50,32 @@ public class NetEntitySyncroniser : MonoBehaviour
             Room room = (Room)(object)comp;
             var roomCollider = Instantiate(staticData.roomPrefab, new Vector3(room.netFields.posx, room.netFields.posy), Quaternion.identity).GetComponent<BoxCollider2D>();
             room.collider = roomCollider;
+            roomCollider.gameObject.GetComponent<NetIDHolder>().ID = id;
             roomCollider.size = new Vector2(room.netFields.sizex, room.netFields.sizey);
             comp = (T)(object)room;
         }
         if (comp.GetType() == typeof(Pawn))
         {
             Pawn pawn = (Pawn)(object)comp;
-            var pawnObject = Instantiate(staticData.pawnPrefab, new Vector3(pawn.netFields.x, pawn.netFields.y), Quaternion.identity);
+            var pawnObject = Instantiate(staticData.pawnPrefab, new Vector3(pawn.netFields.x, pawn.netFields.y, -1), Quaternion.identity);
+            pawnObject.GetComponent<NetIDHolder>().ID = id;
             pawn.self = pawnObject;
             comp = (T)(object)pawn;
+        }
+        if (comp.GetType() == typeof(Task))
+        {
+            Task task = (Task)(object)comp;
+            Room room = MustGetComponent<Room>(task.netFields.targetID);
+            Vector3 pos = new Vector3(
+                UnityEngine.Random.Range(room.netFields.posx - room.netFields.sizex / 2, room.netFields.posx + room.netFields.sizex / 2),
+                UnityEngine.Random.Range(room.netFields.posy - room.netFields.sizey / 2, room.netFields.posy + room.netFields.sizey / 2),
+                -2
+            );
+            var taskObject = Instantiate(staticData.taskPrefab, pos, Quaternion.identity);
+            taskObject.GetComponent<NetIDHolder>().ID = id;
+            taskObject.GetComponent<SpriteRenderer>().color = StaticData.GetColor(task.netFields.ownerID);
+            task.instance = taskObject.GetComponent<NetIDHolder>();
+            comp = (T)(object)task;
         }
     }
 
@@ -78,7 +111,7 @@ public class NetEntitySyncroniser : MonoBehaviour
 
         for (int i = 0; i < components.Length; i++)
         {
-            typeof(NetEntitySyncroniser).GetMethod("addComponent").MakeGenericMethod(components[i].GetType()).Invoke(this, new object[] { entity, components[i] });
+            typeof(NetEntitySyncroniser).GetMethod("addComponent").MakeGenericMethod(components[i].GetType()).Invoke(this, new object[] { entity, components[i], id });
         }
         entities.Add(id, entity);
     }

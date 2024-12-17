@@ -16,13 +16,19 @@ public struct PawnMoveSystem : IEcsRunSystem
     {
         foreach (int i in pawnFilter)
         {
-            ref EcsEntity entity = ref pawnFilter.GetEntity(i);
-            ref Pawn pawn = ref pawnFilter.Get1(i);
-            pawn.netFields.x += Random.Range(-0.1f, 0.1f);
-            pawn.netFields.y += Random.Range(-0.1f, 0.1f);
+            MovePawn(ref pawnFilter.Get1(i));
+        }
+    }
 
-            PhotonView.Get(NetEntitySyncroniser.instance).RPC("UpdateComponents", RpcTarget.All, new object[] { pawn.netFields.id,
-                    new object[] { pawn} });
+    public void MovePawn(ref Pawn pawn)
+    {
+        if (pawn.netFields.taskID != -1)
+        {
+            Vector3 TargetPos = NetEntitySyncroniser.MustGetComponent<Task>(pawn.netFields.taskID).instance.transform.position;
+            Vector2 move = new Vector3(TargetPos.x - pawn.netFields.x, TargetPos.y - pawn.netFields.y, 0).normalized * pawn.netFields.speed;
+            pawn.netFields.x += move.x;
+            pawn.netFields.y += move.y;
+            pawn.self.transform.Translate(move);
         }
     }
 }

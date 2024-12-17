@@ -61,7 +61,7 @@ public class NetEntitySerializer
         PhotonPeer.RegisterType(typeof(Room), 255, SerializePartial, DeserializePartial<Room>);
         PhotonPeer.RegisterType(typeof(KnightPawn), 254, SerializeFull, DeserializeFull);
         PhotonPeer.RegisterType(typeof(Health), 253, SerializeFull, DeserializeFull);
-        PhotonPeer.RegisterType(typeof(Owned), 252, SerializeFull, DeserializeFull);
+        PhotonPeer.RegisterType(typeof(Task), 252, SerializePartial, DeserializePartial<Task>);
         PhotonPeer.RegisterType(typeof(Pawn), 251, SerializePartial, DeserializePartial<Pawn>);
     }
 }

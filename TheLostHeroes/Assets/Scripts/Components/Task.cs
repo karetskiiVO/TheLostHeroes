@@ -15,6 +15,8 @@ public struct Task
     {
         public int targetID;
         public int reward;
+        public int ownerID;
+        public int ID;
     }
     public Networked netFields;
     public NetIDHolder instance;

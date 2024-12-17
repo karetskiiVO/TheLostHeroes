@@ -9,6 +9,7 @@ public class StaticData : ScriptableObject
     //config
     public GameObject pawnPrefab;
     public GameObject roomPrefab;
+    public GameObject taskPrefab;
     [System.Serializable]
     public class TileData
     {

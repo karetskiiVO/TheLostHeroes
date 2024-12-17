@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pawnPrefab: {fileID: 8477544308936224630, guid: 231ef7736d500b04a8550a3c745bac06, type: 3}
   roomPrefab: {fileID: 585098865824119556, guid: e239f1e7d8495ab429493cc6d482f391, type: 3}
+  taskPrefab: {fileID: 6556487420633875765, guid: ad83f7195800b9d44871f47b413d790b, type: 3}
   TileTypes: []
