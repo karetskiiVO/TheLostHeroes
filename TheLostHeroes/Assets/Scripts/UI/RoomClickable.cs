@@ -14,7 +14,21 @@ public class RoomClickable : Clickable
         task.netFields.reward = 100;
         task.netFields.targetID = gameObject.GetComponent<NetIDHolder>().ID;
         task.netFields.ID = NetEntitySyncroniser.instance.nextID;
-        NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { task });
+        if (Input.GetMouseButton(0))
+        {
+            TaskAttack tag = new TaskAttack();
+            NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { task, tag });
+        }
+        else if (Input.GetMouseButton(1))
+        {
+            TaskDefend tag = new TaskDefend();
+            NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { task, tag });
+        }
+        else
+        {
+            TaskWork tag = new TaskWork();
+            NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { task, tag });
+        }
     }
 }
 

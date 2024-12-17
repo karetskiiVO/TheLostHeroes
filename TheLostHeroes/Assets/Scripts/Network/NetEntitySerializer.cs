@@ -59,9 +59,17 @@ public class NetEntitySerializer
     public static void Register()
     {
         PhotonPeer.RegisterType(typeof(Room), 255, SerializePartial, DeserializePartial<Room>);
-        PhotonPeer.RegisterType(typeof(KnightPawn), 254, SerializeFull, DeserializeFull);
         PhotonPeer.RegisterType(typeof(Health), 253, SerializeFull, DeserializeFull);
         PhotonPeer.RegisterType(typeof(Task), 252, SerializePartial, DeserializePartial<Task>);
         PhotonPeer.RegisterType(typeof(Pawn), 251, SerializePartial, DeserializePartial<Pawn>);
+
+        PhotonPeer.RegisterType(typeof(PawnIdle), 254, SerializeFull, DeserializeFull);
+        PhotonPeer.RegisterType(typeof(PawnGoing), 250, SerializeFull, DeserializeFull);
+        PhotonPeer.RegisterType(typeof(PawnWorking), 249, SerializeFull, DeserializeFull);
+        PhotonPeer.RegisterType(typeof(PawnDefending), 248, SerializeFull, DeserializeFull);
+        PhotonPeer.RegisterType(typeof(TaskAttack), 247, SerializeFull, DeserializeFull);
+        PhotonPeer.RegisterType(typeof(TaskDefend), 246, SerializeFull, DeserializeFull);
+        PhotonPeer.RegisterType(typeof(TaskWork), 245, SerializeFull, DeserializeFull);
+        PhotonPeer.RegisterType(typeof(PawnAttacking), 244, SerializeFull, DeserializeFull);
     }
 }

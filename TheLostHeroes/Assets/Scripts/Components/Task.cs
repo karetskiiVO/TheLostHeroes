@@ -2,11 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using Leopotam.Ecs;
 using UnityEngine;
-
+[System.Serializable]
 public struct TaskAttack : IEcsIgnoreInFilter { }
+[System.Serializable]
 public struct TaskDefend : IEcsIgnoreInFilter { }
-public struct TaskExplore : IEcsIgnoreInFilter { }
-public struct TaskInteract : IEcsIgnoreInFilter { }
+[System.Serializable]
+public struct TaskWork : IEcsIgnoreInFilter { }
 
 public struct Task
 {

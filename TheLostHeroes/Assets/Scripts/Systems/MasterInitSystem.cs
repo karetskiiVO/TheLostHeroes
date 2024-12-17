@@ -21,7 +21,7 @@ public struct MasterInitSystem : IEcsInitSystem
             ref Room room = ref roomFilter.Get1(i);
 
             Pawn pawn = new Pawn();
-            pawn.netFields.speed = 0.1f;
+            pawn.netFields.speed = 0.01f;
             pawn.netFields.atk = 10;
             pawn.netFields.x = room.netFields.posx;
             pawn.netFields.y = room.netFields.posy;
@@ -30,9 +30,9 @@ public struct MasterInitSystem : IEcsInitSystem
             pawn.netFields.ID = NetEntitySyncroniser.instance.nextID;
             Health health = new Health();
             health.hp = 100;
-            KnightPawn tag = new KnightPawn();
+            PawnIdle state = new PawnIdle();
 
-            NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { pawn, health, tag });
+            NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { pawn, health, state });
         }
     }
 }

@@ -28,7 +28,11 @@ public class ECS : MonoBehaviour
                 .Add(new WorldGenSystem())
                 .Add(new MasterInitSystem())
                 .Add(new PawnMoveSystem())
-                .Add(new PawnAISystem())
+                .Add(new PawnChooseTaskSystem())
+                .Add(new PawnFinishGoSystem())
+                .Add(new PawnAttackSystem())
+                .Add(new PawnWorkSystem())
+                .Add(new PawnDefendSystem())
                 .Add(new MouseClickSystem())
 
                 .Inject(configuration)
@@ -44,6 +48,9 @@ public class ECS : MonoBehaviour
                 .Add(new WorldGenSystem())
                 .Add(new PawnMoveSystem())
                 .Add(new MouseClickSystem())
+                .Add(new PawnAttackSystem())
+                .Add(new PawnWorkSystem())
+                .Add(new PawnDefendSystem())
 
                 .Inject(configuration)
                 .Inject(sceneData)

@@ -11,7 +11,7 @@ public struct PawnMoveSystem : IEcsRunSystem
 
     private RuntimeData runtimeData;    // подтягивается из Inject
 
-    EcsFilter<Pawn> pawnFilter;
+    EcsFilter<Pawn, PawnGoing> pawnFilter;
     public void Run()
     {
         foreach (int i in pawnFilter)
@@ -22,13 +22,15 @@ public struct PawnMoveSystem : IEcsRunSystem
 
     public void MovePawn(ref Pawn pawn)
     {
-        if (pawn.netFields.taskID != -1)
+        //TODO: поиск пути
+        if (!NetEntitySyncroniser.Alive(pawn.netFields.taskID))
         {
-            Vector3 TargetPos = NetEntitySyncroniser.MustGetComponent<Task>(pawn.netFields.taskID).instance.transform.position;
-            Vector2 move = new Vector3(TargetPos.x - pawn.netFields.x, TargetPos.y - pawn.netFields.y, 0).normalized * pawn.netFields.speed;
-            pawn.netFields.x += move.x;
-            pawn.netFields.y += move.y;
-            pawn.self.transform.Translate(move);
+            return;
         }
+        Vector3 TargetPos = NetEntitySyncroniser.MustGetComponent<Task>(pawn.netFields.taskID).instance.transform.position;
+        Vector2 move = new Vector3(TargetPos.x - pawn.netFields.x, TargetPos.y - pawn.netFields.y, 0).normalized * pawn.netFields.speed;
+        pawn.netFields.x += move.x;
+        pawn.netFields.y += move.y;
+        pawn.self.transform.Translate(move);
     }
 }

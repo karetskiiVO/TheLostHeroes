@@ -24,6 +24,11 @@ public class NetEntitySyncroniser : MonoBehaviour
         return instance.entities[id];
     }
 
+    public static bool Alive(int id)
+    {
+        return instance.entities.ContainsKey(id);
+    }
+
     public static ref T MustGetComponent<T>(int id) where T : struct
     {
         EcsEntity entity = instance.entities[id];
@@ -127,6 +132,7 @@ public class NetEntitySyncroniser : MonoBehaviour
         }
 
     }
+
     [PunRPC]
     public void DestroyEntity(int id)
     {
@@ -137,5 +143,44 @@ public class NetEntitySyncroniser : MonoBehaviour
             Destroy(entity.Get<Task>().instance.gameObject);
         }
         entity.Destroy();
+    }
+
+    public void removeTag<T>(EcsEntity entity) where T : struct
+    {
+        entity.Del<T>();
+    }
+    public void EmitRemoveTags(int id, object[] tags)
+    {
+        PhotonView.Get(this).RPC("RemoveTags", RpcTarget.All, new object[] { id, tags });
+    }
+    [PunRPC]
+    public void RemoveTags(int id, object[] tags)
+    {
+        EcsEntity entity = entities[id];
+
+        for (int i = 0; i < tags.Length; i++)
+        {
+            typeof(NetEntitySyncroniser).GetMethod("removeTag").MakeGenericMethod(tags[i].GetType()).Invoke(this, new object[] { entity });
+        }
+    }
+
+    public void addTag<T>(EcsEntity entity) where T : struct
+    {
+        entity.Get<T>();
+    }
+    public void EmitAddTags(int id, object[] tags)
+    {
+        PhotonView.Get(this).RPC("AddTags", RpcTarget.All, new object[] { id, tags });
+    }
+    [PunRPC]
+    public void AddTags(int id, object[] tags)
+    {
+        EcsEntity entity = entities[id];
+
+        for (int i = 0; i < tags.Length; i++)
+        {
+            typeof(NetEntitySyncroniser).GetMethod("addTag").MakeGenericMethod(tags[i].GetType()).Invoke(this, new object[] { entity });
+        }
+
     }
 }
