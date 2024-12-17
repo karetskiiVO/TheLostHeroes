@@ -7,8 +7,6 @@ using UnityEngine.U2D;
 
 using Photon.Pun;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
-using Unity.VisualScripting;
-using ExitGames.Client.Photon;
 using NavMeshPlus.Components;
 
 public struct WorldGenSystem : IEcsInitSystem
@@ -62,7 +60,7 @@ public struct WorldGenSystem : IEcsInitSystem
 
             /************************** Эксперименты все **************************/
         }
-        Hashtable props = new Hashtable { { StaticData.PLAYER_LOADED_MAP, true } };
+        Hashtable props = new() { { StaticData.PLAYER_LOADED_MAP, true } };
         PhotonNetwork.LocalPlayer.SetCustomProperties(props);
     }
 
@@ -143,22 +141,60 @@ public struct WorldGenSystem : IEcsInitSystem
                     }
                 }
             }
-            foreach (RoomInfo r in roomsInfo)
-            {
-                Room room = new Room();
-                room.netFields = new Room.Networked();
-                room.netFields.sizex = (r.xmax - r.xmin) / 2f * kRoomSizeNormalizationCoefficient;
-                room.netFields.sizey = (r.ymax - r.ymin) / 2f * kRoomSizeNormalizationCoefficient;
-                room.netFields.posx = (r.xmax + r.xmin) / 2f / 2.2f * kRoomSizeNormalizationCoefficient;
-                room.netFields.posy = (r.ymax + r.ymin) / 2f / 2.2f * kRoomSizeNormalizationCoefficient;
-                PhotonView.Get(NetEntitySyncroniser.instance).RPC("CreateWithComponents", RpcTarget.All, new object[] { NetEntitySyncroniser.instance.nextID++,
-                    new object[] { room } });
-            }
         }
 
         public void Clear()
         {
-            Debug.Log("DungeonAccumulator.Clear says: \"implement me\"");
+            var neighbours = new Vector2Int[] {
+                Vector2Int.up, Vector2Int.right,
+                Vector2Int.down, Vector2Int.left
+            };
+
+            var removedHalls = new HashSet<Vector2Int>();
+            var removedDoors = new HashSet<Vector2Int>();
+            var used = new HashSet<Vector2Int>();
+            var taskQueue = new Queue<Vector2Int>();
+            
+            foreach (var elem in map) {
+                taskQueue.Enqueue(elem.Key);
+
+                while (taskQueue.Count > 0) {
+                    var pos = taskQueue.Dequeue();
+
+                    if (!map.ContainsKey(pos)) continue;
+                    if (removedHalls.Contains(pos)) continue;
+                    used.Add(pos);
+
+                    var cnt = 0;
+                    var activeNeighbour = 100000 * Vector2Int.one;
+                    foreach (var neightbourPos in neighbours) {
+                        var bufpos = neightbourPos + pos;
+                        if (!map.ContainsKey(bufpos)) continue;
+                        if (removedHalls.Contains(bufpos)) continue;
+                        if (map[bufpos] == BlockType.Wall) continue; 
+
+                        activeNeighbour = bufpos;
+                        cnt++;
+                    }
+
+                    if (cnt <= 1) {
+                        if (map[pos] == BlockType.Door) {
+                            removedDoors.Add(pos);
+                            continue;
+                        } else {
+                            removedHalls.Add(pos);
+                            taskQueue.Enqueue(activeNeighbour);
+                        }
+                    }
+                }
+            }
+
+            foreach (var removedBlockPos in removedHalls) {
+                map.Remove(removedBlockPos);
+            }
+            foreach (var removedDoorPos in removedDoors) {
+                map[removedDoorPos] = BlockType.Wall;
+            }
         }
 
         private void AddWalls()
@@ -229,19 +265,7 @@ public struct WorldGenSystem : IEcsInitSystem
 
             AddWalls();
 
-            var xcent = 0;
-            var ycent = 0;
-
-            foreach (var elem in map)
-            {
-                xcent += elem.Key.x;
-                ycent += elem.Key.y;
-            }
-
-            xcent /= map.Count;
-            ycent /= map.Count;
-
-            var pivot = new Vector2Int(xcent, ycent);
+            var pivot = new Vector2Int(0, 0);
             var quadredMap = new Dictionary<Vector2Int, BlockType>();
 
             var usedSpritesIndeces = new HashSet<int>{
@@ -438,13 +462,53 @@ public struct WorldGenSystem : IEcsInitSystem
             walkable_tilemap.RefreshAllTiles();
             obstacle_tilemap.RefreshAllTiles();
 
-
             GameObject.Find("NavMesh")
                 .GetComponent<NavMeshSurface>()
                 .BuildNavMesh();
 
             // TODO: пересчитать координаты комнат
             // TODO: избавиться от магических констант в масштабе
+            
+            parent.runtimeData.rooms = new List<EcsEntity>();
+            var roomGroup = new GameObject("RoomGroup");
+
+
+            foreach (RoomInfo r in roomsInfo)  {
+                Room room = new Room();
+                room.netFields = new Room.Networked();
+                room.netFields.sizex = 4 * (r.xmax - r.xmin + 1);
+                room.netFields.sizey = 4 * (r.ymax - r.ymin + 1);
+                room.netFields.posx = 2 * (r.xmax + r.xmin) + 2.5f;
+                room.netFields.posy = 2 * (r.ymax + r.ymin) + 2.5f;
+                PhotonView.Get(NetEntitySyncroniser.instance).RPC(
+                    "CreateWithComponents", 
+                    RpcTarget.All, 
+                    new object[] { 
+                        NetEntitySyncroniser.instance.nextID++,
+                        new object[] { room }
+                    }
+                );
+            }
+
+            foreach (RoomInfo r in roomsInfo)
+            {
+                EcsEntity roomEntity = parent.ecsWorld.NewEntity();
+                ref var room = ref roomEntity.Get<Room>();
+                var roomGameObject = UnityEngine.Object.Instantiate(
+                    parent.staticData.roomPrefab, 
+                    new Vector3(
+                        2 * (r.xmax + r.xmin) + 2.5f,
+                        2 * (r.ymax + r.ymin) + 2.5f
+                    ),
+                    Quaternion.identity,
+                    roomGroup.transform
+                );
+
+                var roomCollider = roomGameObject.GetComponent<BoxCollider2D>();
+                room.collider = roomCollider;
+                roomCollider.size = new Vector2(4 * (r.xmax - r.xmin + 1), 4 * (r.ymax - r.ymin + 1));
+                parent.runtimeData.rooms.Add(roomEntity);
+            }
         }
 
         public HallDigger NewHallDigger(Vector2Int position, uint dir)
