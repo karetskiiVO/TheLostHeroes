@@ -472,9 +472,27 @@ public struct WorldGenSystem : IEcsInitSystem
             parent.runtimeData.rooms = new List<EcsEntity>();
             var roomGroup = new GameObject("RoomGroup");
 
+
+            foreach (RoomInfo r in roomsInfo)  {
+                Room room = new Room();
+                room.netFields = new Room.Networked();
+                room.netFields.sizex = 4 * (r.xmax - r.xmin + 1);
+                room.netFields.sizey = 4 * (r.ymax - r.ymin + 1);
+                room.netFields.posx = 2 * (r.xmax + r.xmin) + 2.5f;
+                room.netFields.posy = 2 * (r.ymax + r.ymin) + 2.5f;
+                PhotonView.Get(NetEntitySyncroniser.instance).RPC(
+                    "CreateWithComponents", 
+                    RpcTarget.All, 
+                    new object[] { 
+                        NetEntitySyncroniser.instance.nextID++,
+                        new object[] { room }
+                    }
+                );
+            }
+
             foreach (RoomInfo r in roomsInfo)
             {
-                EcsEntity roomEntity = parent.ecsWorld.NewEntity();//TODO: уточнить формулы
+                EcsEntity roomEntity = parent.ecsWorld.NewEntity();
                 ref var room = ref roomEntity.Get<Room>();
                 var roomGameObject = UnityEngine.Object.Instantiate(
                     parent.staticData.roomPrefab, 
