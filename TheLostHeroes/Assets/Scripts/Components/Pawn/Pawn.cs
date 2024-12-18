@@ -3,8 +3,17 @@ using System.Collections.Generic;
 using Leopotam.Ecs;
 using UnityEngine;
 using UnityEngine.AI;
+
 [System.Serializable]
-public struct KnightPawn : IEcsIgnoreInFilter { }//Флаг для фильтрации, нет контента
+public struct PawnIdle : IEcsIgnoreInFilter { }
+[System.Serializable]
+public struct PawnGoing : IEcsIgnoreInFilter { }
+[System.Serializable]
+public struct PawnDefending : IEcsIgnoreInFilter { }
+[System.Serializable]
+public struct PawnWorking : IEcsIgnoreInFilter { }
+[System.Serializable]
+public struct PawnAttacking : IEcsIgnoreInFilter { }
 
 public struct Pawn
 {
@@ -15,13 +24,11 @@ public struct Pawn
         public float atk;
         public float x;
         public float y;
-        public int id;
-        public string objective;
-        public float targetX;
-        public float targetY;
+        public int taskID;
+        public int ownerID;
+        public int ID;
     }
     public Networked netFields;
-
 
     public GameObject self;
 }

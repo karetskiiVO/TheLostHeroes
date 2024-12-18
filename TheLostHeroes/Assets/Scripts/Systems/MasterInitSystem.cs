@@ -21,19 +21,18 @@ public struct MasterInitSystem : IEcsInitSystem
             ref Room room = ref roomFilter.Get1(i);
 
             Pawn pawn = new Pawn();
-            pawn.netFields.id = NetEntitySyncroniser.instance.nextID;
-            pawn.netFields.speed = 1;
+            pawn.netFields.speed = 0.01f;
             pawn.netFields.atk = 10;
             pawn.netFields.x = room.netFields.posx;
             pawn.netFields.y = room.netFields.posy;
+            pawn.netFields.ownerID = -1;
+            pawn.netFields.taskID = -1;
+            pawn.netFields.ID = NetEntitySyncroniser.instance.nextID;
             Health health = new Health();
             health.hp = 100;
-            Owned owned = new Owned();
-            owned.owner = -1;
-            KnightPawn tag = new KnightPawn();
+            PawnIdle state = new PawnIdle();
 
-            NetEntitySyncroniser.instance.EmitCreate(pawn.netFields.id, new object[] { pawn, health, owned, tag });
-            NetEntitySyncroniser.instance.nextID++;
+            NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { pawn, health, state });
         }
     }
 }

@@ -28,7 +28,12 @@ public class ECS : MonoBehaviour
                 .Add(new WorldGenSystem())
                 .Add(new MasterInitSystem())
                 .Add(new PawnMoveSystem())
-                .Add(new PawnAISystem())
+                .Add(new PawnChooseTaskSystem())
+                .Add(new PawnFinishGoSystem())
+                .Add(new PawnAttackSystem())
+                .Add(new PawnWorkSystem())
+                .Add(new PawnDefendSystem())
+                .Add(new MouseClickSystem())
 
                 .Inject(configuration)
                 .Inject(sceneData)
@@ -42,6 +47,10 @@ public class ECS : MonoBehaviour
                 .Add(new WorldInitSystem())
                 .Add(new WorldGenSystem())
                 .Add(new PawnMoveSystem())
+                .Add(new MouseClickSystem())
+                .Add(new PawnAttackSystem())
+                .Add(new PawnWorkSystem())
+                .Add(new PawnDefendSystem())
 
                 .Inject(configuration)
                 .Inject(sceneData)
@@ -52,19 +61,21 @@ public class ECS : MonoBehaviour
     }
 
 
-    private void Update() 
+    private void Update()
     {
         HandleInput();
         systems?.Run();
     }
 
-    private void HandleInput ()
+    private void HandleInput()
     {
-        if (Input.GetKeyDown(KeyCode.Mouse0)) {
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
             var clickPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            
+
             var hit = Physics2D.Raycast(clickPos, Vector2.zero);
-            if (hit) {
+            if (hit)
+            {
                 // TODO: понять а как перенести полученные результаты в ECS
 
                 var hitedGameObject = hit.collider.gameObject;
