@@ -4199,7 +4199,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ecs: {fileID: 1771491467}
-  cameraSence: 40
+  cameraSence: 1.3
 --- !u!4 &1925230828
 Transform:
   m_ObjectHideFlags: 0

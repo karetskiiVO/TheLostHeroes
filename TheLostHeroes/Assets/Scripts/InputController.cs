@@ -8,19 +8,22 @@ public class InputController : MonoBehaviour {
     [SerializeField]private float cameraSence;
 
     // положительные значения зафиксируем за заклинаниями
-    const int SelectMode = -1;
-    const int AttackMode = -2;
-    const int DefendMode = -3;
-    const int ScareMode  = -4;
-    const int ClickMode  = -5;
+    public const int SelectMode = -1;
+    public const int AttackMode = -2;
+    public const int DefendMode = -3;
+    public const int ScareMode  = -4;
+    public const int ClickMode  = -5;
     
-    private int mode = SelectMode;
+    private int _mode = SelectMode;
+
+    public int mode { get => _mode; }
+
     public void SetMouseMode (int inputMode) {
-        if (mode == inputMode) {
+        if (_mode == inputMode) {
             inputMode = SelectMode;
         }
 
-        mode = inputMode;
+        _mode = inputMode;
     }
 
     void Update () {
@@ -45,28 +48,5 @@ public class InputController : MonoBehaviour {
         orthographicSize = Math.Max(orthographicSize, 2);
         
         Camera.main.orthographicSize = orthographicSize;
-
-        if (Input.GetKeyDown(KeyCode.Mouse0)) {
-            switch (mode) {
-            case SelectMode: 
-                ecs.Select();
-                break;
-            case AttackMode:
-                ecs.Attack();
-                break;
-            case DefendMode:
-                ecs.Defend();
-                break;
-            case ScareMode:
-                ecs.Scare();
-                break;
-            case ClickMode:
-                ecs.Click();
-                break;
-            default:
-                ecs.CastSpell(mode);
-                break;
-            }
-        }
     }
 }
