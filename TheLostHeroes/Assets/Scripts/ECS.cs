@@ -66,13 +66,6 @@ public class ECS : MonoBehaviour
         systems?.Run();
     }
 
-    public void Click  () {}
-    public void Attack () {}
-    public void Defend () {}
-    public void Scare  () {}
-    public void Select () {}
-    public void CastSpell (int spellid) {}
-
     private void OnDestroy()
     {
         systems?.Destroy();
