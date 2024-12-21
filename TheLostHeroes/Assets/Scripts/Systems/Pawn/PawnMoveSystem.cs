@@ -23,14 +23,14 @@ public struct PawnMoveSystem : IEcsRunSystem
     public void MovePawn(ref Pawn pawn)
     {
         //TODO: поиск пути
-        if (!NetEntitySyncroniser.Alive(pawn.netFields.taskID))
-        {
-            return;
-        }
-        Vector3 TargetPos = NetEntitySyncroniser.MustGetComponent<Task>(pawn.netFields.taskID).instance.transform.position;
-        Vector2 move = new Vector3(TargetPos.x - pawn.netFields.x, TargetPos.y - pawn.netFields.y, 0).normalized * pawn.netFields.speed;
-        pawn.netFields.x += move.x;
-        pawn.netFields.y += move.y;
-        pawn.self.transform.Translate(move);
+        // if (!NetEntitySyncroniser.Alive(pawn.netFields.taskID))
+        // {
+        //     return;
+        // }
+        // Vector3 TargetPos = NetEntitySyncroniser.MustGetComponent<Task>(pawn.netFields.taskID).instance.transform.position;
+        // Vector2 move = new Vector3(TargetPos.x - pawn.netFields.x, TargetPos.y - pawn.netFields.y, 0).normalized * pawn.netFields.speed;
+        // pawn.netFields.x += move.x;
+        // pawn.netFields.y += move.y;
+        // pawn.self.transform.Translate(move);
     }
 }

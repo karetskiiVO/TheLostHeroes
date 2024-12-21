@@ -65,6 +65,7 @@ public class NetEntitySyncroniser : MonoBehaviour
             var pawnObject = Instantiate(staticData.pawnPrefab, new Vector3(pawn.netFields.x, pawn.netFields.y, -1), Quaternion.identity);
             pawnObject.GetComponent<NetIDHolder>().ID = id;
             pawn.self = pawnObject;
+            PawnNavigationAgent.Initialize(pawn);
             comp = (T)(object)pawn;
         }
         if (comp.GetType() == typeof(Task))
@@ -93,6 +94,7 @@ public class NetEntitySyncroniser : MonoBehaviour
         {
             Pawn pawn = (Pawn)(object)comp;
             pawn.self.transform.position = new Vector3(pawn.netFields.x, pawn.netFields.y);
+            PawnNavigationAgent.UpdateTarget(pawn);
         }
     }
     public void EmitCreate(int id, object[] components)
