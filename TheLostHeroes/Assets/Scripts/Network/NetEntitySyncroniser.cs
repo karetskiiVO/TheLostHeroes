@@ -72,9 +72,9 @@ public class NetEntitySyncroniser : MonoBehaviour
         {
             Task task = (Task)(object)comp;
             Room room = MustGetComponent<Room>(task.netFields.targetID);
-            Vector3 pos = new Vector3(
-                UnityEngine.Random.Range(room.netFields.posx - room.netFields.sizex / 2, room.netFields.posx + room.netFields.sizex / 2),
-                UnityEngine.Random.Range(room.netFields.posy - room.netFields.sizey / 2, room.netFields.posy + room.netFields.sizey / 2),
+            var pos = new Vector3(
+                task.netFields.x,
+                task.netFields.y,
                 -2
             );
             var taskObject = Instantiate(staticData.taskPrefab, pos, Quaternion.identity);
