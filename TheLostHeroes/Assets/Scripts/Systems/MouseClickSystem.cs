@@ -9,16 +9,21 @@ public struct MouseClickSystem : IEcsRunSystem, IEcsInitSystem
 {
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
     private StaticData staticData;      // подтягивается из Inject
-
     private RuntimeData runtimeData;    // подтягивается из Inject
 
     private Button backgroundButton;
     private class BoolClass
     {
-        public bool val = false;
+        private bool val = false;
 
         public void Activate () {
             val = true;
+        }
+
+        public bool IsActive () {
+            var res = val;
+            val = false;
+            return res;
         }
     }
     private BoolClass clickedFlag;
@@ -41,7 +46,7 @@ public struct MouseClickSystem : IEcsRunSystem, IEcsInitSystem
 
     public void Run()
     {
-        if (clickedFlag.val)
+        if (clickedFlag.IsActive())
         {
             Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
@@ -55,7 +60,5 @@ public struct MouseClickSystem : IEcsRunSystem, IEcsInitSystem
 
             clicked?.OnClick();
         }
-
-        clickedFlag.val = false;
     }
 }

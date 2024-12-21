@@ -13,6 +13,8 @@ public abstract class Clickable : MonoBehaviour
         describer ??= GameObject.Find("Describer").GetComponent<DescriberBehavour>();
     }
 
+    // TODO: прокинуть beholder в ECS 
+
     public virtual void Click  () {}
     public virtual void Attack () {}
     public virtual void Defend () {}
@@ -20,7 +22,7 @@ public abstract class Clickable : MonoBehaviour
     public virtual void Select () {}
     public virtual void CastSpell (int spellid) {}
 
-    public void OnClick () { // TODO: Перейти с этого архаичного ужаса на switch и перегрузки уже нормальных взаимодействий
+    public void OnClick () {
         var mode = inputController.mode;
 
         switch (mode) {
