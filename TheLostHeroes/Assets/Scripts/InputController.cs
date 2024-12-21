@@ -20,7 +20,7 @@ public class InputController : MonoBehaviour {
             inputMode = SelectMode;
         }
 
-        mode = SelectMode;
+        mode = inputMode;
     }
 
     void Update () {
