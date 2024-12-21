@@ -18,6 +18,9 @@ public struct Task
         public int reward;
         public int ownerID;
         public int ID;
+
+        public float x;
+        public float y;
     }
     public Networked netFields;
     public NetIDHolder instance;
