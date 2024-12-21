@@ -12,17 +12,22 @@ public struct MouseClickSystem : IEcsRunSystem
     private RuntimeData runtimeData;    // подтягивается из Inject
 
     EcsFilter<Pawn> pawnFilter;
+
     public void Run()
     {
         if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
         {
             Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
+            Clickable clicked = null;
+
             if (hit)
             {
-                Clickable clicked = hit.collider.gameObject.GetComponent<Clickable>();
-                clicked?.OnClick();
+                clicked = hit.collider.gameObject.GetComponent<Clickable>();
             }
+            clicked ??= runtimeData.defaultClickableBehavour;
+
+            clicked?.OnClick();
         }
     }
 }

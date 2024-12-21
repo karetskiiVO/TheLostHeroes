@@ -31,5 +31,13 @@ public class RoomClickable : Clickable
         var tag = new TaskDefend();
         NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { task, tag });
     }
+
+    public override void Select() {
+        describer?.SetDesctription(new DescriberBehavour.Description{
+            entityName = "Room",
+            entityDescription = "Not so comfortable",
+            actionButtons = new DescriberBehavour.IActionButton[]{}
+        });
+    }
 }
 

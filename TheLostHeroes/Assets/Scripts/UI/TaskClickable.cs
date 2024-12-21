@@ -5,13 +5,6 @@ using UnityEngine;
 using Leopotam.Ecs;
 public class TaskClickable : Clickable
 {
-    public override void Click  () {}
-    public override void Attack () {}
-    public override void Defend () {}
-    public override void Scare  () {}
-    public override void Select () {}
-    public override void CastSpell (int spellid) {}
-
     // public override void OnClick()
     // {
     //     int id = gameObject.GetComponent<NetIDHolder>().ID;

@@ -51,8 +51,8 @@ public class DescriberBehavour : MonoBehaviour { // TODO: сделать мод�
         };
 
         SetDesctription(new Description{
-            entityName = "%entityName%",
-            entityDescription = "%entityDescription%",
+            entityName = "",
+            entityDescription = "",
             actionButtons = new IActionButton[] {}
         });
     }

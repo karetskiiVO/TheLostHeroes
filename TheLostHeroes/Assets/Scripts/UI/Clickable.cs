@@ -6,9 +6,11 @@ using UnityEngine;
 public abstract class Clickable : MonoBehaviour
 {
     private InputController inputController;
+    static protected DescriberBehavour describer = null; 
 
     private void Start () {
         inputController = GameObject.Find("Input").GetComponent<InputController>();
+        describer ??= GameObject.Find("Describer").GetComponent<DescriberBehavour>();
     }
 
     public virtual void Click  () {}

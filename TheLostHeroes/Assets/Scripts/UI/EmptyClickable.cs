@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PawnClickable : Clickable {
-    public override void Select () {
+using Leopotam.Ecs;
+public class EmptyClickable : Clickable
+{
+    public override void Select() {
         describer?.SetDesctription(new DescriberBehavour.Description{
-            entityName = "Sir, Knight",
-            entityDescription = "Ready to serve",
+            entityName = "-",
+            entityDescription = "There is nothing to look up",
             actionButtons = new DescriberBehavour.IActionButton[]{}
         });
     }

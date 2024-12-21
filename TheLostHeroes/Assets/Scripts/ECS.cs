@@ -19,6 +19,7 @@ public class ECS : MonoBehaviour
         RuntimeData runtimeData = new RuntimeData
         {
             randomConfiguration = new RandomConfiguration(sceneData.seed),
+            defaultClickableBehavour = GetComponent<EmptyClickable>()
         };
 
         if (PhotonNetwork.IsMasterClient)
