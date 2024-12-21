@@ -27,12 +27,12 @@ public struct MasterInitSystem : IEcsInitSystem
             pawn.netFields.y = room.netFields.posy;
             pawn.netFields.ownerID = -1;
             pawn.netFields.taskID = -1;
-            pawn.netFields.ID = NetEntitySyncroniser.instance.nextID;
+            pawn.netFields.ID = NetEntitySyncronizer.instance.nextID;
             Health health = new Health();
             health.hp = 100;
             PawnIdle state = new PawnIdle();
 
-            NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { pawn, health, state });
+            NetEntitySyncronizer.instance.EmitCreate(NetEntitySyncronizer.instance.nextID++, new object[] { pawn, health, state });
         }
     }
 }

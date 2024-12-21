@@ -15,14 +15,15 @@ public struct WorldInitSystem : IEcsInitSystem
 
     public void Init()
     {
-        NetEntitySyncroniser.instance.ecsWorld = ecsWorld;
-        NetEntitySyncroniser.instance.staticData = staticData;
+        NetEntitySyncronizer.instance.ecsWorld = ecsWorld;
+        NetEntitySyncronizer.instance.staticData = staticData;
         //Create the map
         runtimeData.map = ecsWorld.NewEntity();
         ref var map = ref runtimeData.map.Get<Map>();
         var gridTransform = GameObject.Find("Grid").transform;
         map.walkable_tilemap = gridTransform.Find("map_walkable").GetComponent<Tilemap>();
-        map.obstacle_tilemap = gridTransform.Find("map_obstacle").GetComponent<Tilemap>();
+        map.obstacle_tilemap_front = gridTransform.Find("map_obstacle_front").GetComponent<Tilemap>();
+        map.obstacle_tilemap_back = gridTransform.Find("map_obstacle_back").GetComponent<Tilemap>();
         map.sprites = gridTransform.GetComponent<SpriteContainer>().sprites;
     }
 }

@@ -12,24 +12,24 @@ public class RoomClickable : Clickable
         task.netFields.ownerID = PhotonNetwork.LocalPlayer.ActorNumber;
         task.netFields.reward = 100;
         task.netFields.targetID = gameObject.GetComponent<NetIDHolder>().ID;
-        task.netFields.ID = NetEntitySyncroniser.instance.nextID;
+        task.netFields.ID = NetEntitySyncronizer.instance.nextID;
         task.netFields.x =  Camera.main.ScreenToWorldPoint(Input.mousePosition).x;
         task.netFields.y =  Camera.main.ScreenToWorldPoint(Input.mousePosition).y;
 
         var tag = new TaskAttack();
-        NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { task, tag });
+        NetEntitySyncronizer.instance.EmitCreate(NetEntitySyncronizer.instance.nextID++, new object[] { task, tag });
     }
     public override void Defend () {
         var task = new Task();
         task.netFields.ownerID = PhotonNetwork.LocalPlayer.ActorNumber;
         task.netFields.reward = 100;
         task.netFields.targetID = gameObject.GetComponent<NetIDHolder>().ID;
-        task.netFields.ID = NetEntitySyncroniser.instance.nextID;
+        task.netFields.ID = NetEntitySyncronizer.instance.nextID;
         task.netFields.x =  Camera.main.ScreenToWorldPoint(Input.mousePosition).x;
         task.netFields.y =  Camera.main.ScreenToWorldPoint(Input.mousePosition).y;
 
         var tag = new TaskDefend();
-        NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { task, tag });
+        NetEntitySyncronizer.instance.EmitCreate(NetEntitySyncronizer.instance.nextID++, new object[] { task, tag });
     }
 
     public override void Select() {

@@ -49,7 +49,8 @@ public struct WorldGenSystem : IEcsInitSystem
                 this,
                 runtimeData.randomConfiguration,
                 mapComponent.walkable_tilemap,
-                mapComponent.obstacle_tilemap,
+                mapComponent.obstacle_tilemap_front,
+                mapComponent.obstacle_tilemap_back,
                 mapComponent.sprites
             );
             dungeonAccumulator.Genere();
@@ -72,16 +73,18 @@ public struct WorldGenSystem : IEcsInitSystem
         private List<RoomInfo> roomsInfo = new List<RoomInfo>();
 
         private readonly Tilemap walkable_tilemap;
-        private readonly Tilemap obstacle_tilemap;
+        private readonly Tilemap obstacle_tilemap_front;
+        private readonly Tilemap obstacle_tilemap_back;
         private readonly SpriteAtlas sprites;
 
-        public DungeonAccumulator(WorldGenSystem parent, RandomConfiguration randomDevice, Tilemap walkable_tilemap, Tilemap obstacle_tilemap, SpriteAtlas sprites)
+        public DungeonAccumulator(WorldGenSystem parent, RandomConfiguration randomDevice, Tilemap walkable_tilemap, Tilemap obstacle_tilemap_front, Tilemap obstacle_tilemap_back, SpriteAtlas sprites)
         {
             this.parent = parent;
             this.randomDevice = randomDevice;
 
             this.walkable_tilemap = walkable_tilemap;
-            this.obstacle_tilemap = obstacle_tilemap;
+            this.obstacle_tilemap_front = obstacle_tilemap_front;
+            this.obstacle_tilemap_back = obstacle_tilemap_back;
             this.sprites = sprites;
         }
 
@@ -336,17 +339,27 @@ public struct WorldGenSystem : IEcsInitSystem
                 { 0b0100_1110, new Sprite[] {loadedSprites[131], loadedSprites[112], loadedSprites[90]}},
                 { 0b1000_0011, new Sprite[] {loadedSprites[133], loadedSprites[114], loadedSprites[92]}},
                 { 0b1001_0011, new Sprite[] {loadedSprites[133], loadedSprites[114], loadedSprites[92]}},
-                { 0b1111_1000, new Sprite[] {loadedSprites[69]}},
-                { 0b1111_1001, new Sprite[] {loadedSprites[69]}},
-                { 0b1111_1100, new Sprite[] {loadedSprites[69]}},
-                { 0b0011_1000, new Sprite[] {loadedSprites[68]}},
-                { 0b0011_1001, new Sprite[] {loadedSprites[68]}},
-                { 0b1110_0000, new Sprite[] {loadedSprites[70]}},
-                { 0b1110_0100, new Sprite[] {loadedSprites[70]}},
+                { 0b1111_1001, new Sprite[] {loadedSprites[69]}},  // bottom wall
+                { 0b1111_1100, new Sprite[] {loadedSprites[69]}},  // bottom wall
+                { 0b1111_1000, new Sprite[] {loadedSprites[69]}},  // bottom wall
+                { 0b0011_1000, new Sprite[] {loadedSprites[68]}},  // bottom wall
+                { 0b0011_1001, new Sprite[] {loadedSprites[68]}},  // bottom wall
+                { 0b1110_0000, new Sprite[] {loadedSprites[70]}},  // bottom wall
+                { 0b1110_0100, new Sprite[] {loadedSprites[70]}},  // bottom wall
                 { 0b1110_1111, new Sprite[] {null, null, loadedSprites[93]}},
                 { 0b1011_1111, new Sprite[] {null, null, loadedSprites[94]}},
                 { 0b1111_1011, new Sprite[] {loadedSprites[134]}},
                 { 0b1111_1110, new Sprite[] {loadedSprites[135]}},
+            };
+
+            var bottomWallSprites = new HashSet<int>{
+                0b1111_1001,
+                0b1111_1100,
+                0b1111_1000,
+                0b0011_1000,
+                0b0011_1001,
+                0b1110_0000,
+                0b1110_0100,
             };
 
             var lVerticalStartsMasks = new HashSet<int> {/*90, 135*/ 0b0000_1110, 0b0100_1110, 0b1111_1110 };
@@ -429,7 +442,14 @@ public struct WorldGenSystem : IEcsInitSystem
                         tile.transform = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
                         tile.sprite = currWallSprites[i];
 
-                        obstacle_tilemap.SetTile(new Vector3Int(elem.Key.x, elem.Key.y + i, 0), tile);
+                        if (bottomWallSprites.Contains(wallmask))
+                        {
+                            obstacle_tilemap_front.SetTile(new Vector3Int(elem.Key.x, elem.Key.y + i, 0), tile);
+                        }
+                        else
+                        {
+                            obstacle_tilemap_back.SetTile(new Vector3Int(elem.Key.x, elem.Key.y + i, 0), tile);
+                        }
                     }
                 }
             }
@@ -445,7 +465,7 @@ public struct WorldGenSystem : IEcsInitSystem
                     tile.transform = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
                     tile.sprite = leftWallSprite;
 
-                    obstacle_tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), tile);
+                    obstacle_tilemap_front.SetTile(new Vector3Int(pos.x, pos.y, 0), tile);
 
                     pos += Vector2Int.up;
                 }
@@ -462,14 +482,15 @@ public struct WorldGenSystem : IEcsInitSystem
                     tile.transform = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
                     tile.sprite = rightWallSprite;
 
-                    obstacle_tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), tile);
+                    obstacle_tilemap_front.SetTile(new Vector3Int(pos.x, pos.y, 0), tile);
 
                     pos += Vector2Int.up;
                 }
             }
 
             walkable_tilemap.RefreshAllTiles();
-            obstacle_tilemap.RefreshAllTiles();
+            obstacle_tilemap_front.RefreshAllTiles();
+            obstacle_tilemap_back.RefreshAllTiles();
 
             GameObject.Find("NavMesh")
                 .GetComponent<NavMeshSurface>()
@@ -490,7 +511,7 @@ public struct WorldGenSystem : IEcsInitSystem
                 room.netFields.sizey = 4 * (r.ymax - r.ymin + 1);
                 room.netFields.posx = 2 * (r.xmax + r.xmin) + 2.5f;
                 room.netFields.posy = 2 * (r.ymax + r.ymin) + 2.5f;
-                NetEntitySyncroniser.instance.EmitCreate(NetEntitySyncroniser.instance.nextID++, new object[] { room });
+                NetEntitySyncronizer.instance.EmitCreate(NetEntitySyncronizer.instance.nextID++, new object[] { room });
             }
         }
 
