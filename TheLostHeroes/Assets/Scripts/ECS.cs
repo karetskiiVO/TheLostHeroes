@@ -63,25 +63,15 @@ public class ECS : MonoBehaviour
 
     private void Update()
     {
-        HandleInput();
         systems?.Run();
     }
 
-    private void HandleInput()
-    {
-        if (Input.GetKeyDown(KeyCode.Mouse0))
-        {
-            var clickPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-            var hit = Physics2D.Raycast(clickPos, Vector2.zero);
-            if (hit)
-            {
-                // TODO: понять а как перенести полученные результаты в ECS
-
-                var hitedGameObject = hit.collider.gameObject;
-            }
-        }
-    }
+    public void Click  () {}
+    public void Attack () {}
+    public void Defend () {}
+    public void Scare  () {}
+    public void Select () {}
+    public void CastSpell (int spellid) {}
 
     private void OnDestroy()
     {

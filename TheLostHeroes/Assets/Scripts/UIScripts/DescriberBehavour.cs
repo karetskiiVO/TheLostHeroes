@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DescriberBehavour : MonoBehaviour { // TODO: сделать нормальный механизм апдейта в рантайме
+public class DescriberBehavour : MonoBehaviour { // TODO: сделать модифицируемый список кнопок спелов
     [SerializeField]private Text entityName;
     [SerializeField]private Text entityDescription;
 
