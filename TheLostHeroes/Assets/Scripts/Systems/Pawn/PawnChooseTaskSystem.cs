@@ -28,9 +28,9 @@ public struct PawnChooseTaskSystem : IEcsRunSystem
                 {
                     Debug.Log("pawn found task");
                     pawn.netFields.taskID = task.netFields.ID;
-                    NetEntitySyncroniser.instance.EmitRemoveTags(pawn.netFields.ID, new object[] { new PawnIdle() });
-                    NetEntitySyncroniser.instance.EmitAddTags(pawn.netFields.ID, new object[] { new PawnGoing() });
-                    NetEntitySyncroniser.instance.EmitUpdate(pawn.netFields.ID, new object[] { pawn });
+                    NetEntitySyncronizer.instance.EmitRemoveTags(pawn.netFields.ID, new object[] { new PawnIdle() });
+                    NetEntitySyncronizer.instance.EmitAddTags(pawn.netFields.ID, new object[] { new PawnGoing() });
+                    NetEntitySyncronizer.instance.EmitUpdate(pawn.netFields.ID, new object[] { pawn });
                     break;
                 }
             }
