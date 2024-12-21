@@ -32,6 +32,7 @@ public struct PawnFinishGoSystem : IEcsRunSystem
 
     public void ReachedTask(ref Pawn pawn)
     {
+        NetEntitySyncroniser.instance.EmitUpdate(pawn.netFields.ID, new object[] { pawn });
         NetEntitySyncroniser.instance.EmitRemoveTags(pawn.netFields.ID, new object[] { new PawnGoing() });
         EcsEntity taskEntity = NetEntitySyncroniser.GetEntity(pawn.netFields.taskID);
         if (taskEntity.Has<TaskAttack>())
