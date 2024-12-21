@@ -15,8 +15,8 @@ public struct WorldInitSystem : IEcsInitSystem
 
     public void Init()
     {
-        NetEntitySyncroniser.instance.ecsWorld = ecsWorld;
-        NetEntitySyncroniser.instance.staticData = staticData;
+        NetEntitySyncronizer.instance.ecsWorld = ecsWorld;
+        NetEntitySyncronizer.instance.staticData = staticData;
         //Create the map
         runtimeData.map = ecsWorld.NewEntity();
         ref var map = ref runtimeData.map.Get<Map>();

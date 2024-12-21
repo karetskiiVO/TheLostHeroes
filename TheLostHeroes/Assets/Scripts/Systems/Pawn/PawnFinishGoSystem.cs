@@ -13,16 +13,16 @@ public struct PawnFinishGoSystem : IEcsRunSystem
         foreach (int i in pawnFilter)
         {
             ref var pawn = ref pawnFilter.Get1(i);
-            if (!NetEntitySyncroniser.Alive(pawn.netFields.taskID))
+            if (!NetEntitySyncronizer.Alive(pawn.netFields.taskID))
             {
                 pawn.netFields.taskID = -1;
-                NetEntitySyncroniser.instance.EmitRemoveTags(pawn.netFields.ID, new object[] { new PawnGoing() });
-                NetEntitySyncroniser.instance.EmitAddTags(pawn.netFields.ID, new object[] { new PawnIdle() });
-                NetEntitySyncroniser.instance.EmitUpdate(pawn.netFields.ID, new object[] { pawn });
+                NetEntitySyncronizer.instance.EmitRemoveTags(pawn.netFields.ID, new object[] { new PawnGoing() });
+                NetEntitySyncronizer.instance.EmitAddTags(pawn.netFields.ID, new object[] { new PawnIdle() });
+                NetEntitySyncronizer.instance.EmitUpdate(pawn.netFields.ID, new object[] { pawn });
                 continue;
             }
-            ref var task = ref NetEntitySyncroniser.MustGetComponent<Task>(pawn.netFields.taskID);
-            ref var room = ref NetEntitySyncroniser.MustGetComponent<Room>(task.netFields.targetID);
+            ref var task = ref NetEntitySyncronizer.MustGetComponent<Task>(pawn.netFields.taskID);
+            ref var room = ref NetEntitySyncronizer.MustGetComponent<Room>(task.netFields.targetID);
             if (room.collider.bounds.Contains(new Vector3(pawn.netFields.x, pawn.netFields.y, room.collider.gameObject.transform.position.z)))
             {
                 ReachedTask(ref pawn);
@@ -32,20 +32,20 @@ public struct PawnFinishGoSystem : IEcsRunSystem
 
     public void ReachedTask(ref Pawn pawn)
     {
-        NetEntitySyncroniser.instance.EmitUpdate(pawn.netFields.ID, new object[] { pawn });
-        NetEntitySyncroniser.instance.EmitRemoveTags(pawn.netFields.ID, new object[] { new PawnGoing() });
-        EcsEntity taskEntity = NetEntitySyncroniser.GetEntity(pawn.netFields.taskID);
+        NetEntitySyncronizer.instance.EmitUpdate(pawn.netFields.ID, new object[] { pawn });
+        NetEntitySyncronizer.instance.EmitRemoveTags(pawn.netFields.ID, new object[] { new PawnGoing() });
+        EcsEntity taskEntity = NetEntitySyncronizer.GetEntity(pawn.netFields.taskID);
         if (taskEntity.Has<TaskAttack>())
         {
-            NetEntitySyncroniser.instance.EmitAddTags(pawn.netFields.ID, new object[] { new PawnAttacking() });
+            NetEntitySyncronizer.instance.EmitAddTags(pawn.netFields.ID, new object[] { new PawnAttacking() });
         }
         else if (taskEntity.Has<TaskDefend>())
         {
-            NetEntitySyncroniser.instance.EmitAddTags(pawn.netFields.ID, new object[] { new PawnDefending() });
+            NetEntitySyncronizer.instance.EmitAddTags(pawn.netFields.ID, new object[] { new PawnDefending() });
         }
         else if (taskEntity.Has<TaskWork>())
         {
-            NetEntitySyncroniser.instance.EmitAddTags(pawn.netFields.ID, new object[] { new PawnWorking() });
+            NetEntitySyncronizer.instance.EmitAddTags(pawn.netFields.ID, new object[] { new PawnWorking() });
         }
         else
         {

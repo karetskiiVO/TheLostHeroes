@@ -11,10 +11,10 @@ using Photon.Pun;
 using System;
 using ExitGames.Client.Photon;
 
-public class NetEntitySyncroniser : MonoBehaviour
+public class NetEntitySyncronizer : MonoBehaviour
 {
     public int nextID;
-    public static NetEntitySyncroniser instance;
+    public static NetEntitySyncronizer instance;
     public EcsWorld ecsWorld;
     public StaticData staticData;
     public Dictionary<int, EcsEntity> entities = new Dictionary<int, EcsEntity>();
@@ -118,7 +118,7 @@ public class NetEntitySyncroniser : MonoBehaviour
 
         for (int i = 0; i < components.Length; i++)
         {
-            typeof(NetEntitySyncroniser).GetMethod("addComponent").MakeGenericMethod(components[i].GetType()).Invoke(this, new object[] { entity, components[i], id });
+            typeof(NetEntitySyncronizer).GetMethod("addComponent").MakeGenericMethod(components[i].GetType()).Invoke(this, new object[] { entity, components[i], id });
         }
         entities.Add(id, entity);
     }
@@ -130,7 +130,7 @@ public class NetEntitySyncroniser : MonoBehaviour
 
         for (int i = 0; i < components.Length; i++)
         {
-            typeof(NetEntitySyncroniser).GetMethod("updateComponent").MakeGenericMethod(components[i].GetType()).Invoke(this, new object[] { entity, components[i] });
+            typeof(NetEntitySyncronizer).GetMethod("updateComponent").MakeGenericMethod(components[i].GetType()).Invoke(this, new object[] { entity, components[i] });
         }
 
     }
@@ -162,7 +162,7 @@ public class NetEntitySyncroniser : MonoBehaviour
 
         for (int i = 0; i < tags.Length; i++)
         {
-            typeof(NetEntitySyncroniser).GetMethod("removeTag").MakeGenericMethod(tags[i].GetType()).Invoke(this, new object[] { entity });
+            typeof(NetEntitySyncronizer).GetMethod("removeTag").MakeGenericMethod(tags[i].GetType()).Invoke(this, new object[] { entity });
         }
     }
 
@@ -181,7 +181,7 @@ public class NetEntitySyncroniser : MonoBehaviour
 
         for (int i = 0; i < tags.Length; i++)
         {
-            typeof(NetEntitySyncroniser).GetMethod("addTag").MakeGenericMethod(tags[i].GetType()).Invoke(this, new object[] { entity });
+            typeof(NetEntitySyncronizer).GetMethod("addTag").MakeGenericMethod(tags[i].GetType()).Invoke(this, new object[] { entity });
         }
 
     }
