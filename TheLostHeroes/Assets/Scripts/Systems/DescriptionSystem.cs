@@ -1,7 +1,6 @@
-using System.Diagnostics;
 using System.IO;
 using Leopotam.Ecs;
-using UnityEditor.Search;
+using UnityEngine;
 
 public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
@@ -31,13 +30,15 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
 
                 if (beholdedEntity.Has<Barrack>()) {
                     name = "Barrack";
-                    description = "";
+                    description = "Two hundred thousand units are ready, and a million are on the way.";
                 } 
                 else if (beholdedEntity.Has<Tavern>()) {
                     name = "Tavern";
+                    description = "Будь как дома, путник";
                 }
                 else if (beholdedEntity.Has<Mine>()) {
                     name = "Mine";
+                    description = "Eins, zwei, drei, vier, fünf, sechs, sieben, acht, neun, aus";
                 }
 
                 beholder.describer.SetDescription(new DescriberBehavour.Description{
@@ -45,57 +46,76 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
                     entityDescription = description,
                     actionButtons = actionButtons,
                 });
-            } 
-            else if (beholdedEntity.Has<Pawn>()) {
+            }
+            else if (beholdedEntity.Has<Pawn>())
+            {
                 var descriptionWriter = new StringWriter();
 
                 descriptionWriter.WriteLine("Status: {0}", "ready to serve");
 
-                if (beholdedEntity.Has<Health>()) {
+                if (beholdedEntity.Has<Health>())
+                {
                     var hpComponent = beholdedEntity.Get<Health>();
                     descriptionWriter.WriteLine("HP: ({0}/{1})", hpComponent.hp, hpComponent.maxhp);
                 }
 
-                if (beholdedEntity.Has<Attack>()) {
+                if (beholdedEntity.Has<Attack>())
+                {
                     var attackComponent = beholdedEntity.Get<Attack>();
                     descriptionWriter.WriteLine("ATK: {0}", attackComponent.atk);
                 }
 
-                if (beholdedEntity.Has<Money>()) {
+                if (beholdedEntity.Has<Money>())
+                {
                     var moneyComponent = beholdedEntity.Get<Money>();
-                    if (moneyComponent.money < 800) {
+                    if (moneyComponent.money < 800)
+                    {
                         descriptionWriter.WriteLine("gold: {0}", moneyComponent.money);
-                    } else {
+                    }
+                    else
+                    {
                         descriptionWriter.WriteLine("gold: {0}K{1}", moneyComponent.money / 1000, (moneyComponent.money % 1000) / 100);
                     }
-                    
+
                 }
 
-                beholder.describer.SetDescription(new DescriberBehavour.Description{
+                beholder.describer.SetDescription(new DescriberBehavour.Description
+                {
                     entityName = "Sir Knight",
                     entityDescription = descriptionWriter.ToString(),
-                    actionButtons = new DescriberBehavour.IActionButton[] {},
+                    actionButtons = new DescriberBehavour.IActionButton[] { },
                 });
             }
-            else if (beholdedEntity.Has<Task>()) {
+            else if (beholdedEntity.Has<Task>())
+            {
                 ref var taskComponent = ref beholdedEntity.Get<Task>();
                 var descriptionWriter = new StringWriter();
 
                 descriptionWriter.WriteLine("Reward: {0}", taskComponent.netFields.reward);
                 descriptionWriter.WriteLine("interested: {0}", taskComponent.workers.Count);
+                int taskID = taskComponent.netFields.ID;
 
-                beholder.describer.SetDescription(new DescriberBehavour.Description{
+                // TODO: ограничить ресурсы игрока, вообще прописать изменение награды
+
+                beholder.describer.SetDescription(new DescriberBehavour.Description
+                {
                     entityName = "Task",
                     entityDescription = descriptionWriter.ToString(),
                     actionButtons = new DescriberBehavour.IActionButton[] {
                         new DescriberBehavour.SimpleActionButton("+100", delegate {
-                            
+                            ref Task task = ref NetEntitySyncronizer.MustGetComponent<Task>(taskID);
+                            task.netFields.reward += 100;
+                            NetEntitySyncronizer.instance.EmitUpdate(taskID, new object[]{ task });
                         }),
                         new DescriberBehavour.SimpleActionButton("+500", delegate {
-                            
+                            ref Task task = ref NetEntitySyncronizer.MustGetComponent<Task>(taskID);
+                            task.netFields.reward += 500;
+                            NetEntitySyncronizer.instance.EmitUpdate(taskID, new object[]{ task });
                         }),
                         new DescriberBehavour.SimpleActionButton("Remove", delegate {
-                            
+                            ref Task task = ref NetEntitySyncronizer.MustGetComponent<Task>(taskID);
+                            task.netFields.reward = 0;
+                            NetEntitySyncronizer.instance.EmitUpdate(taskID, new object[]{ task });
                         }),
                     },
                 });

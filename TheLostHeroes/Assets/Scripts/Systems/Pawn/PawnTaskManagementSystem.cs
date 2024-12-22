@@ -16,6 +16,7 @@ public struct PawnTaskManagementSystem : IEcsRunSystem
 
     public void Run()
     {
+        CleanupTasks();
         foreach (int i in pawnFilter)
         {
             ref var pawn = ref pawnFilter.Get1(i);
@@ -30,6 +31,24 @@ public struct PawnTaskManagementSystem : IEcsRunSystem
                     break;
                 }
             }
+        }
+    }
+
+    private void CleanupTasks()
+    {
+        List<int> cancelled_tasks = new List<int>();
+        foreach (int i in taskFilter)
+        {
+            ref var task = ref taskFilter.Get1(i);
+            if (task.netFields.reward == 0)
+            {
+                cancelled_tasks.Add(i);
+            }
+        }
+        foreach (int i in cancelled_tasks)
+        {
+            ref var task = ref taskFilter.Get1(i);
+            FinishTask(ref task);
         }
     }
 

@@ -15,6 +15,8 @@ public struct Room
     [System.Serializable]
     public struct Networked
     {
+        public int ID;
+        public int ownerID;
         public float posx;
         public float posy;
         public float sizex;

@@ -507,6 +507,8 @@ public struct WorldGenSystem : IEcsInitSystem
             {
                 Room room = new Room();
                 room.netFields = new Room.Networked();
+                room.netFields.ID = NetEntitySyncronizer.instance.nextID;
+                room.netFields.ownerID = -1;
                 room.netFields.sizex = 4 * (r.xmax - r.xmin + 1);
                 room.netFields.sizey = 4 * (r.ymax - r.ymin + 1);
                 room.netFields.posx = 2 * (r.xmax + r.xmin) + 2.5f;
