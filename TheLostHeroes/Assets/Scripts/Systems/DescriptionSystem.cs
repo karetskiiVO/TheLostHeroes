@@ -3,7 +3,7 @@ using System.IO;
 using Leopotam.Ecs;
 using UnityEditor.Search;
 
-public struct DescriptionSystem : IEcsRunSystem {
+public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
     private StaticData staticData;      // подтягивается из Inject
     private RuntimeData runtimeData;    // подтягивается из Inject
@@ -11,6 +11,10 @@ public struct DescriptionSystem : IEcsRunSystem {
     EcsFilter<DescriptionBeholder> filter;
 
     private DescriberBehavour prevDescriber;
+
+    public void Init () {
+        prevDescriber = null;
+    }
 
     public void Run () {
         bool updated = false;
