@@ -29,8 +29,8 @@ public struct RoomInitSystem : IEcsInitSystem {
         }
 
         for (var playerIndex = 0; playerIndex < playersIndices.Count; playerIndex++) {
-            // TODO: выставить id игроков
-            var idx = roomIndices[runtimeData.randomConfiguration.Next(roomIndices.Count)];
+            // TODO: выставить id игроков, синхронизироваться по сети
+            var idx = roomIndices[playersIndices[playerIndex]];
             ref var roomComponent = ref roomFilter.Get1(idx);
             ref var roomEntity = ref roomFilter.GetEntity(idx);
 

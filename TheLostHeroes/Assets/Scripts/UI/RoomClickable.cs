@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Photon.Pun;
-
+using Leopotam.Ecs;
 
 public class RoomClickable : Clickable
 {
@@ -32,6 +32,11 @@ public class RoomClickable : Clickable
 
         var tag = new TaskDefend();
         NetEntitySyncronizer.instance.EmitCreate(NetEntitySyncronizer.instance.nextID++, new object[] { task, tag });
+    }
+
+    public override void Click () {
+        // TODO: сделать проверку на тип, и добавить анимацию монетки, вылетающей из шахты
+        netEntitySynchronizer.entities[ecsid].Get<PlayerClick>();
     }
 }
 

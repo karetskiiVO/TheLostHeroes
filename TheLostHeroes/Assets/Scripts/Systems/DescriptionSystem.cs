@@ -24,9 +24,8 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
             ref var beholder = ref filter.Get1(id);
             
             if (beholdedEntity.Has<Room>()) {
-                var name = "Strange room";
-                var description = "The howling of the wind...";
-                var actionButtons = new DescriberBehavour.IActionButton[] {};
+                string name = "";
+                string description = "";
 
                 if (beholdedEntity.Has<Barrack>()) {
                     name = "Barrack";
@@ -44,7 +43,9 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
                 beholder.describer.SetDescription(new DescriberBehavour.Description{
                     entityName = name,
                     entityDescription = description,
-                    actionButtons = actionButtons,
+                    actionButtons = new DescriberBehavour.IActionButton[] {
+                        new DescriberBehavour.SimpleActionButton("Upgrade", delegate { /* TODO: повесить компонент upgrdable и обработать его */} )
+                    },
                 });
             }
             else if (beholdedEntity.Has<Pawn>())
