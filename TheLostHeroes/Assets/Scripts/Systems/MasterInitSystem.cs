@@ -9,7 +9,6 @@ public struct MasterInitSystem : IEcsInitSystem
 {
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
     private StaticData staticData;      // подтягивается из Inject
-
     private RuntimeData runtimeData;    // подтягивается из Inject
 
     EcsFilter<Room> roomFilter;

@@ -29,6 +29,7 @@ public class ECS : MonoBehaviour
             systems
                 .Add(new WorldInitSystem())
                 .Add(new WorldGenSystem())
+                .Add(new RoomInitSystem())
                 .Add(new MasterInitSystem())
                 .Add(new PawnMoveSystem())
                 .Add(new PawnTaskManagementSystem())
@@ -51,6 +52,7 @@ public class ECS : MonoBehaviour
             systems
                 .Add(new WorldInitSystem())
                 .Add(new WorldGenSystem())
+                .Add(new RoomInitSystem())
                 .Add(new PawnMoveSystem())
                 .Add(new MouseClickSystem())
                 .Add(new PawnAttackSystem())

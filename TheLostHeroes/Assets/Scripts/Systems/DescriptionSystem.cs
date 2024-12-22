@@ -15,7 +15,8 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
     public void Init () {
         prevDescriber = null;
     }
-
+    
+    // TODO: добавить в описание игрока-владельца
     public void Run () {
         bool updated = false;
 
@@ -24,10 +25,25 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
             ref var beholder = ref filter.Get1(id);
             
             if (beholdedEntity.Has<Room>()) {
+                var name = "Strange room";
+                var description = "The howling of the wind...";
+                var actionButtons = new DescriberBehavour.IActionButton[] {};
+
+                if (beholdedEntity.Has<Barrack>()) {
+                    name = "Barrack";
+                    description = "";
+                } 
+                else if (beholdedEntity.Has<Tavern>()) {
+                    name = "Tavern";
+                }
+                else if (beholdedEntity.Has<Mine>()) {
+                    name = "Mine";
+                }
+
                 beholder.describer.SetDescription(new DescriberBehavour.Description{
-                    entityName = "Room",
-                    entityDescription = "It's not very comfortable here",
-                    actionButtons = new DescriberBehavour.IActionButton[] {},
+                    entityName = name,
+                    entityDescription = description,
+                    actionButtons = actionButtons,
                 });
             } 
             else if (beholdedEntity.Has<Pawn>()) {
