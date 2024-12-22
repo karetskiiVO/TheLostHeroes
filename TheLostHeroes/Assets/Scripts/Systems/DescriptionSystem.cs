@@ -1,3 +1,4 @@
+using System.IO;
 using Leopotam.Ecs;
 using UnityEditor.Search;
 
@@ -21,10 +22,24 @@ public struct DescriptionSystem : IEcsRunSystem {
                 });
             } else if (beholdedEntity.Has<Pawn>()) {
                 // TODO: hp/morale
+                var descriptionWriter = new StringWriter();
+
+                descriptionWriter.WriteLine("Status: {0}", "ready to serve");
+
+                if (beholdedEntity.Has<Health>()) {
+                    var hpComponent = beholdedEntity.Get<Health>();
+                    descriptionWriter.WriteLine("HP: ({0}/{1})", hpComponent.hp, hpComponent.maxhp);
+                }
+
+                if (beholdedEntity.Has<Attack>()) {
+                    var attackComponent = beholdedEntity.Get<Attack>();
+                    descriptionWriter.WriteLine("ATK: {0}", attackComponent.atk);
+                }
+
 
                 beholder.describer.SetDescription(new DescriberBehavour.Description{
                     entityName = "Sir Knight",
-                    entityDescription = "Ready to serve",
+                    entityDescription = descriptionWriter.ToString(),
                     actionButtons = new DescriberBehavour.IActionButton[] {},
                 });
             } else if (beholdedEntity.Has<Task>()) {
