@@ -89,7 +89,7 @@ public struct DescriptionSystem : IEcsRunSystem {
         }
 
         if (!updated) {
-            prevDescriber.SetDescription(new DescriberBehavour.Description{
+            prevDescriber?.SetDescription(new DescriberBehavour.Description{
                 entityName = "The emptiness of the dungeon",
                 entityDescription = "There was something here once, but the passage of time is merciless to all things.",
                 actionButtons = new DescriberBehavour.IActionButton[] {},
