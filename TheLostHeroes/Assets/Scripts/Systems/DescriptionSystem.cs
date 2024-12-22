@@ -68,8 +68,6 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
                 descriptionWriter.WriteLine("Reward: {0}", taskComponent.netFields.reward);
                 descriptionWriter.WriteLine("interested: {0}", taskComponent.workers.Count);
 
-                // TODO: ограничить ресурсы игрока, вообще прописать изменение награды
-
                 beholder.describer.SetDescription(new DescriberBehavour.Description{
                     entityName = "Task",
                     entityDescription = descriptionWriter.ToString(),

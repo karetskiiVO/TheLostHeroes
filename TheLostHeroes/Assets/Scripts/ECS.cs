@@ -9,6 +9,7 @@ public class ECS : MonoBehaviour
 {
     public StaticData configuration;
     public SceneData sceneData;
+    public RuntimeData runtimeData;
     private EcsWorld ecsWorld;
     private EcsSystems systems;
 
@@ -16,9 +17,9 @@ public class ECS : MonoBehaviour
     {
         ecsWorld = new EcsWorld();
         systems = new EcsSystems(ecsWorld);
-        RuntimeData runtimeData = new RuntimeData
+        runtimeData = new RuntimeData
         {
-            playerMoney = 0,
+            playerMoney = new(),
             randomConfiguration = new RandomConfiguration(sceneData.seed),
             defaultClickableBehavour = GetComponent<EmptyClickable>()
         };

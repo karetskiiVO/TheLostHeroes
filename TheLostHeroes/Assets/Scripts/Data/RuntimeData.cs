@@ -15,5 +15,5 @@ public struct RuntimeData
     public RandomConfiguration randomConfiguration;
     public EmptyClickable defaultClickableBehavour;
 
-    public int playerMoney;
+    public PlayerMoney playerMoney;
 }
