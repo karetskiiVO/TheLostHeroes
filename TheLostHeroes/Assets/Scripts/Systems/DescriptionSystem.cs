@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using Leopotam.Ecs;
 using UnityEditor.Search;
@@ -10,9 +11,9 @@ public struct DescriptionSystem : IEcsRunSystem {
     EcsFilter<DescriptionBeholder> filter;
 
     public void Run () {
-        foreach (var idx in filter) {
-            ref var beholdedEntity = ref filter.GetEntity(idx);
-            ref var beholder = ref filter.Get1(idx);
+        foreach (var id in filter) {
+            ref var beholdedEntity = ref filter.GetEntity(id);
+            ref var beholder = ref filter.Get1(id);
             
             if (beholdedEntity.Has<Room>()) {
                 beholder.describer.SetDescription(new DescriberBehavour.Description{
@@ -21,7 +22,6 @@ public struct DescriptionSystem : IEcsRunSystem {
                     actionButtons = new DescriberBehavour.IActionButton[] {},
                 });
             } else if (beholdedEntity.Has<Pawn>()) {
-                // TODO: hp/morale
                 var descriptionWriter = new StringWriter();
 
                 descriptionWriter.WriteLine("Status: {0}", "ready to serve");
@@ -36,6 +36,15 @@ public struct DescriptionSystem : IEcsRunSystem {
                     descriptionWriter.WriteLine("ATK: {0}", attackComponent.atk);
                 }
 
+                if (beholdedEntity.Has<Money>()) {
+                    var moneyComponent = beholdedEntity.Get<Money>();
+                    if (moneyComponent.money < 800) {
+                        descriptionWriter.WriteLine("gold: {0}", moneyComponent.money);
+                    } else {
+                        descriptionWriter.WriteLine("gold: {0}K{1}", moneyComponent.money / 1000, (moneyComponent.money % 1000) / 100);
+                    }
+                    
+                }
 
                 beholder.describer.SetDescription(new DescriberBehavour.Description{
                     entityName = "Sir Knight",
@@ -43,10 +52,28 @@ public struct DescriptionSystem : IEcsRunSystem {
                     actionButtons = new DescriberBehavour.IActionButton[] {},
                 });
             } else if (beholdedEntity.Has<Task>()) {
+                ref var taskComponent = ref beholdedEntity.Get<Task>();
+                var descriptionWriter = new StringWriter();
+
+                descriptionWriter.WriteLine("Reward: {0}", taskComponent.netFields.reward);
+                descriptionWriter.WriteLine("interested: {0}", -1);
+
+                // TODO: ограничить ресурсы игрока, вообще прописать изменение награды
+
                 beholder.describer.SetDescription(new DescriberBehavour.Description{
                     entityName = "Task",
-                    entityDescription = "Can't say anything",
-                    actionButtons = new DescriberBehavour.IActionButton[] {},
+                    entityDescription = descriptionWriter.ToString(),
+                    actionButtons = new DescriberBehavour.IActionButton[] {
+                        new DescriberBehavour.SimpleActionButton("+100", delegate {
+                            
+                        }),
+                        new DescriberBehavour.SimpleActionButton("+500", delegate {
+                            
+                        }),
+                        new DescriberBehavour.SimpleActionButton("Remove", delegate {
+                            
+                        }),
+                    },
                 });
             }
 

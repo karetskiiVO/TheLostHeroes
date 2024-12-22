@@ -12,11 +12,22 @@ public class DescriberBehavour : MonoBehaviour { // TODO: сделать мод�
         public void Callback ();
     }
 
-    private class DebugActionButton : IActionButton {
-        public void Callback () {}
+    public class SimpleActionButton : IActionButton {
+        private readonly string text;
+        private readonly UnityEngine.Events.UnityAction callback;
+
+        public SimpleActionButton (string text, UnityEngine.Events.UnityAction callback) {
+            this.text     = text;
+            this.callback = callback;
+        }
+
+
+        public void Callback () {
+            callback();
+        }
 
         public string Text () {
-            return "";
+            return text;
         }
     }
 

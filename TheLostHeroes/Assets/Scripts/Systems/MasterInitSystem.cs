@@ -36,9 +36,12 @@ public struct MasterInitSystem : IEcsInitSystem
             {
                 atk = 1,
             };
+            var money = new Money {
+                money = 0,
+            };
             var state = new PawnIdle();
 
-            NetEntitySyncronizer.instance.EmitCreate(NetEntitySyncronizer.instance.nextID++, new object[] { pawn, health, attack, state });
+            NetEntitySyncronizer.instance.EmitCreate(NetEntitySyncronizer.instance.nextID++, new object[] { pawn, health, attack, money, state });
         }
     }
 }

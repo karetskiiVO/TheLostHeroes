@@ -131,6 +131,11 @@ public class NetEntitySerializer
                 serializeMethod   = SerializeFull, 
                 deserializeMethod = DeserializeFull,
             },
+            new () {
+                type              = typeof(Money),
+                serializeMethod   = SerializeFull, 
+                deserializeMethod = DeserializeFull,
+            },
         };
 
         byte id = 255;
