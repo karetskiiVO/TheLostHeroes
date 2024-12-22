@@ -29,7 +29,7 @@ public class ECS : MonoBehaviour
                 .Add(new WorldGenSystem())
                 .Add(new MasterInitSystem())
                 .Add(new PawnMoveSystem())
-                .Add(new PawnChooseTaskSystem())
+                .Add(new PawnTaskManagementSystem())
                 .Add(new PawnFinishGoSystem())
                 .Add(new PawnAttackSystem())
                 .Add(new PawnWorkSystem())

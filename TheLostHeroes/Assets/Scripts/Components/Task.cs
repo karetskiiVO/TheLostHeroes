@@ -24,4 +24,5 @@ public struct Task
     }
     public Networked netFields;
     public NetIDHolder instance;
+    public List<int> workers;
 }

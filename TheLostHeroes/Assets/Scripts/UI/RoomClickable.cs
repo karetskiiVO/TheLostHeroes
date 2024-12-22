@@ -15,6 +15,7 @@ public class RoomClickable : Clickable
         task.netFields.ID = NetEntitySyncronizer.instance.nextID;
         task.netFields.x =  Camera.main.ScreenToWorldPoint(Input.mousePosition).x;
         task.netFields.y =  Camera.main.ScreenToWorldPoint(Input.mousePosition).y;
+        task.workers = new List<int>();
 
         var tag = new TaskAttack();
         NetEntitySyncronizer.instance.EmitCreate(NetEntitySyncronizer.instance.nextID++, new object[] { task, tag });
@@ -27,6 +28,7 @@ public class RoomClickable : Clickable
         task.netFields.ID = NetEntitySyncronizer.instance.nextID;
         task.netFields.x =  Camera.main.ScreenToWorldPoint(Input.mousePosition).x;
         task.netFields.y =  Camera.main.ScreenToWorldPoint(Input.mousePosition).y;
+        task.workers = new List<int>();
 
         var tag = new TaskDefend();
         NetEntitySyncronizer.instance.EmitCreate(NetEntitySyncronizer.instance.nextID++, new object[] { task, tag });
