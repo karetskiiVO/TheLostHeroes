@@ -10,7 +10,11 @@ public struct DescriptionSystem : IEcsRunSystem {
 
     EcsFilter<DescriptionBeholder> filter;
 
+    private DescriberBehavour prevDescriber;
+
     public void Run () {
+        bool updated = false;
+
         foreach (var id in filter) {
             ref var beholdedEntity = ref filter.GetEntity(id);
             ref var beholder = ref filter.Get1(id);
@@ -58,7 +62,7 @@ public struct DescriptionSystem : IEcsRunSystem {
                 var descriptionWriter = new StringWriter();
 
                 descriptionWriter.WriteLine("Reward: {0}", taskComponent.netFields.reward);
-                descriptionWriter.WriteLine("interested: {0}", -1);
+                descriptionWriter.WriteLine("interested: {0}", taskComponent.workers.Count);
 
                 // TODO: ограничить ресурсы игрока, вообще прописать изменение награды
 
@@ -79,7 +83,17 @@ public struct DescriptionSystem : IEcsRunSystem {
                 });
             }
 
+            prevDescriber = beholder.describer;
+            updated = true;
             break;
+        }
+
+        if (!updated) {
+            prevDescriber.SetDescription(new DescriberBehavour.Description{
+                entityName = "The emptiness of the dungeon",
+                entityDescription = "There was something here once, but the passage of time is merciless to all things.",
+                actionButtons = new DescriberBehavour.IActionButton[] {},
+            });
         }
     }
 }

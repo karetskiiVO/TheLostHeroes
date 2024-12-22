@@ -18,6 +18,7 @@ public class ECS : MonoBehaviour
         systems = new EcsSystems(ecsWorld);
         RuntimeData runtimeData = new RuntimeData
         {
+            playerMoney = 0,
             randomConfiguration = new RandomConfiguration(sceneData.seed),
             defaultClickableBehavour = GetComponent<EmptyClickable>()
         };
