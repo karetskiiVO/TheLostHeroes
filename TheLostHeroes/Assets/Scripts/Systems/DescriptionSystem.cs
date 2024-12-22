@@ -21,7 +21,8 @@ public struct DescriptionSystem : IEcsRunSystem {
                     entityDescription = "It's not very comfortable here",
                     actionButtons = new DescriberBehavour.IActionButton[] {},
                 });
-            } else if (beholdedEntity.Has<Pawn>()) {
+            } 
+            else if (beholdedEntity.Has<Pawn>()) {
                 var descriptionWriter = new StringWriter();
 
                 descriptionWriter.WriteLine("Status: {0}", "ready to serve");
@@ -51,7 +52,8 @@ public struct DescriptionSystem : IEcsRunSystem {
                     entityDescription = descriptionWriter.ToString(),
                     actionButtons = new DescriberBehavour.IActionButton[] {},
                 });
-            } else if (beholdedEntity.Has<Task>()) {
+            }
+            else if (beholdedEntity.Has<Task>()) {
                 ref var taskComponent = ref beholdedEntity.Get<Task>();
                 var descriptionWriter = new StringWriter();
 
