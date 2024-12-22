@@ -20,6 +20,8 @@ public struct DescriptionSystem : IEcsRunSystem {
                     actionButtons = new DescriberBehavour.IActionButton[] {},
                 });
             } else if (beholdedEntity.Has<Pawn>()) {
+                // TODO: hp/morale
+
                 beholder.describer.SetDescription(new DescriberBehavour.Description{
                     entityName = "Sir Knight",
                     entityDescription = "Ready to serve",
