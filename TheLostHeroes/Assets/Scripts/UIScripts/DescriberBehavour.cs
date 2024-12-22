@@ -50,14 +50,14 @@ public class DescriberBehavour : MonoBehaviour { // TODO: сделать мод�
             actionButtonGameObjects[2].transform.GetComponentInChildren<Text>(),
         };
 
-        SetDesctription(new Description{
+        SetDescription(new Description{
             entityName = "",
             entityDescription = "",
             actionButtons = new IActionButton[] {}
         });
     }
 
-    public void SetDesctription (Description description) {
+    public void SetDescription (Description description) {
         entityName.text = description.entityName;
         entityDescription.text = description.entityDescription;
 

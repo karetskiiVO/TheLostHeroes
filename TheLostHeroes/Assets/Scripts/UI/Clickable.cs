@@ -1,25 +1,48 @@
 using System.Collections;
 using System.Collections.Generic;
+using Leopotam.Ecs;
 using Photon.Pun;
 using UnityEngine;
 
 public abstract class Clickable : MonoBehaviour
 {
-    private InputController inputController;
-    static protected DescriberBehavour describer = null; 
+    private static InputController inputController = null;
+
+    protected static DescriberBehavour describer = null; 
+    protected static NetEntitySyncronizer netEntitySynchronizer = null;
+    protected static int selectedID = 0;
+
+    protected int ecsid;
 
     private void Start () {
-        inputController = GameObject.Find("Input").GetComponent<InputController>();
+        var netIDholder = gameObject.GetComponent<NetIDHolder>();
+        if (netIDholder != null) {
+            ecsid = netIDholder.ID;
+        }
+
+        inputController ??= GameObject.Find("Input").GetComponent<InputController>();
+        netEntitySynchronizer ??= GameObject.Find("Network").GetComponent<NetEntitySyncronizer>();
         describer ??= GameObject.Find("Describer").GetComponent<DescriberBehavour>();
     }
 
-    // TODO: прокинуть beholder в ECS 
+    protected Clickable previousSelected;
 
     public virtual void Click  () {}
     public virtual void Attack () {}
     public virtual void Defend () {}
     public virtual void Scare  () {}
-    public virtual void Select () {}
+    protected void deselect () {
+        if (netEntitySynchronizer.entities.ContainsKey(selectedID)) {
+            netEntitySynchronizer.entities[selectedID].Del<DescriptionBeholder>();
+        }
+        selectedID = ecsid;
+    }
+    public virtual void Select () {
+        deselect();
+
+        ref var setter = ref netEntitySynchronizer.entities[ecsid].Get<DescriptionBeholder>();
+        setter.describer = describer;
+    }
     public virtual void CastSpell (int spellid) {}
 
     public void OnClick () {

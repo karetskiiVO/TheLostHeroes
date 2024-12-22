@@ -6,7 +6,34 @@ public struct DescriptionSystem : IEcsRunSystem {
     private StaticData staticData;      // подтягивается из Inject
     private RuntimeData runtimeData;    // подтягивается из Inject
 
+    EcsFilter<DescriptionBeholder> filter;
+
     public void Run () {
-        // TODO: сделать отправку данных
+        foreach (var idx in filter) {
+            ref var beholdedEntity = ref filter.GetEntity(idx);
+            ref var beholder = ref filter.Get1(idx);
+            
+            if (beholdedEntity.Has<Room>()) {
+                beholder.describer.SetDescription(new DescriberBehavour.Description{
+                    entityName = "Room",
+                    entityDescription = "It's not very comfortable here",
+                    actionButtons = new DescriberBehavour.IActionButton[] {},
+                });
+            } else if (beholdedEntity.Has<Pawn>()) {
+                beholder.describer.SetDescription(new DescriberBehavour.Description{
+                    entityName = "Sir Knight",
+                    entityDescription = "Ready to serve",
+                    actionButtons = new DescriberBehavour.IActionButton[] {},
+                });
+            } else if (beholdedEntity.Has<Task>()) {
+                beholder.describer.SetDescription(new DescriberBehavour.Description{
+                    entityName = "Task",
+                    entityDescription = "Can't say anything",
+                    actionButtons = new DescriberBehavour.IActionButton[] {},
+                });
+            }
+
+            break;
+        }
     }
 }
