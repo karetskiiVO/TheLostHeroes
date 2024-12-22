@@ -21,14 +21,13 @@ public struct Pawn
     public struct Networked
     {
         public float speed;
-        public float atk;
         public float x;
         public float y;
         public int taskID;
         public int ownerID;
         public int ID;
     }
-    public Networked netFields;
 
+    public Networked netFields;
     public GameObject self;
 }

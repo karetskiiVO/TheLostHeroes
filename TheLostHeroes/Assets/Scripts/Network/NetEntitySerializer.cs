@@ -56,20 +56,93 @@ public class NetEntitySerializer
             return formatter.Deserialize(stream);
         }
     }
-    public static void Register()
-    {
-        PhotonPeer.RegisterType(typeof(Room), 255, SerializePartial, DeserializePartial<Room>);
-        PhotonPeer.RegisterType(typeof(Health), 253, SerializeFull, DeserializeFull);
-        PhotonPeer.RegisterType(typeof(Task), 252, SerializePartial, DeserializePartial<Task>);
-        PhotonPeer.RegisterType(typeof(Pawn), 251, SerializePartial, DeserializePartial<Pawn>);
 
-        PhotonPeer.RegisterType(typeof(PawnIdle), 254, SerializeFull, DeserializeFull);
-        PhotonPeer.RegisterType(typeof(PawnGoing), 250, SerializeFull, DeserializeFull);
-        PhotonPeer.RegisterType(typeof(PawnWorking), 249, SerializeFull, DeserializeFull);
-        PhotonPeer.RegisterType(typeof(PawnDefending), 248, SerializeFull, DeserializeFull);
-        PhotonPeer.RegisterType(typeof(TaskAttack), 247, SerializeFull, DeserializeFull);
-        PhotonPeer.RegisterType(typeof(TaskDefend), 246, SerializeFull, DeserializeFull);
-        PhotonPeer.RegisterType(typeof(TaskWork), 245, SerializeFull, DeserializeFull);
-        PhotonPeer.RegisterType(typeof(PawnAttacking), 244, SerializeFull, DeserializeFull);
+    private class RegisterArg {
+        public Type type;
+        public SerializeMethod serializeMethod;
+        public DeserializeMethod deserializeMethod;
+    }
+
+    public static void Register()
+    {   
+        var registerArgs = new RegisterArg[] {
+            new () {
+                type              = typeof(Room),
+                serializeMethod   = SerializePartial, 
+                deserializeMethod = DeserializePartial<Room>,
+            },
+            new () {
+                type              = typeof(Task),
+                serializeMethod   = SerializePartial, 
+                deserializeMethod = DeserializePartial<Task>,
+            },
+            new () {
+                type              = typeof(Pawn),
+                serializeMethod   = SerializePartial, 
+                deserializeMethod = DeserializePartial<Pawn>,
+            },
+            new () {
+                type              = typeof(PawnIdle),
+                serializeMethod   = SerializeFull, 
+                deserializeMethod = DeserializeFull,
+            },
+            new () {
+                type              = typeof(PawnGoing),
+                serializeMethod   = SerializeFull, 
+                deserializeMethod = DeserializeFull,
+            },
+            new () {
+                type              = typeof(PawnWorking),
+                serializeMethod   = SerializeFull, 
+                deserializeMethod = DeserializeFull,
+            },
+            new () {
+                type              = typeof(PawnDefending),
+                serializeMethod   = SerializeFull, 
+                deserializeMethod = DeserializeFull,
+            },
+            new () {
+                type              = typeof(TaskAttack),
+                serializeMethod   = SerializeFull, 
+                deserializeMethod = DeserializeFull,
+            },
+            new () {
+                type              = typeof(TaskDefend),
+                serializeMethod   = SerializeFull, 
+                deserializeMethod = DeserializeFull,
+            },
+            new () {
+                type              = typeof(TaskWork),
+                serializeMethod   = SerializeFull, 
+                deserializeMethod = DeserializeFull,
+            },
+            new () {
+                type              = typeof(PawnAttacking),
+                serializeMethod   = SerializeFull, 
+                deserializeMethod = DeserializeFull,
+            },
+            new () {
+                type              = typeof(Health),
+                serializeMethod   = SerializeFull, 
+                deserializeMethod = DeserializeFull,
+            },
+            new () {
+                type              = typeof(Attack),
+                serializeMethod   = SerializeFull, 
+                deserializeMethod = DeserializeFull,
+            },
+            new () {
+                type              = typeof(Money),
+                serializeMethod   = SerializeFull, 
+                deserializeMethod = DeserializeFull,
+            },
+        };
+
+        byte id = 255;
+
+        foreach (var registerArg in registerArgs) {
+            PhotonPeer.RegisterType(registerArg.type, id, registerArg.serializeMethod, registerArg.deserializeMethod);
+            id--;
+        }
     }
 }

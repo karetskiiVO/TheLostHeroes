@@ -36,6 +36,8 @@ public class ECS : MonoBehaviour
                 .Add(new PawnDefendSystem())
                 .Add(new MouseClickSystem())
 
+                .Add(new DescriptionSystem())
+
                 .Inject(configuration)
                 .Inject(sceneData)
                 .Inject(runtimeData)
@@ -53,6 +55,8 @@ public class ECS : MonoBehaviour
                 .Add(new PawnWorkSystem())
                 .Add(new PawnDefendSystem())
 
+                .Add(new DescriptionSystem())
+                
                 .Inject(configuration)
                 .Inject(sceneData)
                 .Inject(runtimeData)
