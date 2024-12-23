@@ -4313,7 +4313,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db304a0c925aeac4bbaa074d859d4c6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seed: 
+  seed: 42
   sceneDescriber: {fileID: 756566480}
 --- !u!114 &1771491470
 MonoBehaviour:
