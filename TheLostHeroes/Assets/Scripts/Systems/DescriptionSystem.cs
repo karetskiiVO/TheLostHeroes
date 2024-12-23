@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using Leopotam.Ecs;
 using UnityEngine;
@@ -16,6 +17,7 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
     }
     
     // TODO: добавить в описание игрока-владельца
+    // TODO: добавить описание системы опыта
     public void Run () {
         bool updated = false;
 
@@ -27,9 +29,14 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
                 string name = "";
                 string description = "";
 
+                var actionButtons = new List<DescriberBehavour.IActionButton>();
                 if (beholdedEntity.Has<Barrack>()) {
                     name = "Barrack";
                     description = "Two hundred thousand units are ready, and a million are on the way.";
+
+                    actionButtons.Add(
+                        new DescriberBehavour.SimpleActionButton("Recruit", delegate { /* TODO: повесить компонент upgrdable и обработать его */} )
+                    );
                 } 
                 else if (beholdedEntity.Has<Tavern>()) {
                     name = "Tavern";
@@ -39,13 +46,14 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
                     name = "Mine";
                     description = "Eins, zwei, drei, vier, fünf, sechs, sieben, acht, neun, aus";
                 }
+                actionButtons.Add(
+                    new DescriberBehavour.SimpleActionButton("Upgrade", delegate { /* TODO: повесить компонент upgrdable и обработать его */} )
+                );
 
                 beholder.describer.SetDescription(new DescriberBehavour.Description{
                     entityName = name,
                     entityDescription = description,
-                    actionButtons = new DescriberBehavour.IActionButton[] {
-                        new DescriberBehavour.SimpleActionButton("Upgrade", delegate { /* TODO: повесить компонент upgrdable и обработать его */} )
-                    },
+                    actionButtons = actionButtons.ToArray(),
                 });
             }
             else if (beholdedEntity.Has<Pawn>())
