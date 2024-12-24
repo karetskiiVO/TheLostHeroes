@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Leopotam.Ecs;
+using Photon.Pun;
 using UnityEngine;
 
 public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem
@@ -24,6 +25,8 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem
     {
         bool updated = false;
 
+        var playerNumber = PhotonNetwork.LocalPlayer.ActorNumber;
+
         foreach (var id in filter)
         {
             ref var beholdedEntity = ref filter.GetEntity(id);
@@ -32,50 +35,66 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem
             if (beholdedEntity.Has<Room>())
             {
                 string name = "";
-                string description = "";
-
+                var descriptionWriter = new StringWriter();
                 var actionButtons = new List<DescriberBehavour.IActionButton>();
+                
+                var ownerNumber = beholdedEntity.Get<Room>().netFields.ownerID;
+                if (ownerNumber == -1) {
+                    descriptionWriter.WriteLine("no owner");
+                } else {
+                    descriptionWriter.WriteLine("owner: {0}", PhotonNetwork.PlayerList[ownerNumber - 1]);
+                }
+                
                 if (beholdedEntity.Has<Barrack>())
                 {
                     name = "Barrack";
-                    description = "Two hundred thousand units are ready, and a million are on the way.";
+                    descriptionWriter.WriteLine("Two hundred thousand units are ready, and a million are on the way.");
 
-                    actionButtons.Add(
-                        new DescriberBehavour.SimpleActionButton("Recruit", delegate
-                        {
-                            EcsEntity self = NetEntitySyncronizer.GetEntity(id);
-                            self.Get<RecruitRequest>();
-                        })
-                    );
+                    if (ownerNumber == playerNumber)
+                        actionButtons.Add(
+                            new DescriberBehavour.SimpleActionButton("Recruit", delegate
+                            {
+                                EcsEntity self = NetEntitySyncronizer.GetEntity(id);
+                                self.Get<RecruitRequest>();
+                            })
+                        );
                 }
                 else if (beholdedEntity.Has<Tavern>())
                 {
                     name = "Tavern";
-                    description = "Будь как дома, путник";
+                    descriptionWriter.WriteLine("Будь как дома, путник");
                 }
                 else if (beholdedEntity.Has<Mine>())
                 {
                     name = "Mine";
-                    description = "Eins, zwei, drei, vier, fünf, sechs, sieben, acht, neun, aus";
+                    descriptionWriter.WriteLine("Eins, zwei, drei, vier, fünf, sechs, sieben, acht, neun, aus");
                 }
-                actionButtons.Add(
-                    new DescriberBehavour.SimpleActionButton("Upgrade", delegate
-                    {
-                        EcsEntity self = NetEntitySyncronizer.GetEntity(id);
-                        self.Get<UpgradeRequest>();
-                    })
-                );
+                if (ownerNumber == playerNumber)
+                    actionButtons.Add(
+                        new DescriberBehavour.SimpleActionButton("Upgrade", delegate
+                        {
+                            EcsEntity self = NetEntitySyncronizer.GetEntity(id);
+                            self.Get<UpgradeRequest>();
+                        })
+                    );
 
                 beholder.describer.SetDescription(new DescriberBehavour.Description
                 {
                     entityName = name,
-                    entityDescription = description,
+                    entityDescription = descriptionWriter.ToString(),
                     actionButtons = actionButtons.ToArray(),
                 });
             }
             else if (beholdedEntity.Has<Pawn>())
             {
                 var descriptionWriter = new StringWriter();
+
+                var ownerNumber = beholdedEntity.Get<Pawn>().netFields.ownerID;
+                if (ownerNumber == -1) {
+                    descriptionWriter.WriteLine("no owner");
+                } else {
+                    descriptionWriter.WriteLine("owner: {0}", PhotonNetwork.PlayerList[ownerNumber - 1]);
+                }
 
                 descriptionWriter.WriteLine("Status: {0}", "ready to serve");
 
@@ -116,6 +135,13 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem
             {
                 ref var taskComponent = ref beholdedEntity.Get<Task>();
                 var descriptionWriter = new StringWriter();
+
+                var ownerNumber = taskComponent.netFields.ownerID;
+                if (ownerNumber == -1) {
+                    descriptionWriter.WriteLine("no owner");
+                } else {
+                    descriptionWriter.WriteLine("owner: {0}", PhotonNetwork.PlayerList[ownerNumber - 1]);
+                }
 
                 descriptionWriter.WriteLine("Reward: {0}", taskComponent.netFields.reward);
                 descriptionWriter.WriteLine("interested: {0}", taskComponent.workers.Count);

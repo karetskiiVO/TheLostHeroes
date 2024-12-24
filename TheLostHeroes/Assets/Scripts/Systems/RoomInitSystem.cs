@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Leopotam.Ecs;
+using Photon.Pun;
 
 public struct RoomInitSystem : IEcsInitSystem {
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
@@ -18,7 +19,7 @@ public struct RoomInitSystem : IEcsInitSystem {
 
         // заспавним три казармы и раздазим их игрокам
 
-        int playersCnt = 2;
+        int playersCnt = PhotonNetwork.PlayerList.Length;
         Debug.Log("ДЛЯ RoomInitSystem ВВЕСТИ НОРМАЛЬНОЕ КОЛИЧЕСТВО");
 
         var playersIndices = new List<int>();
@@ -33,6 +34,9 @@ public struct RoomInitSystem : IEcsInitSystem {
             var idx = roomIndices[playersIndices[playerIndex]];
             ref var roomComponent = ref roomFilter.Get1(idx);
             ref var roomEntity = ref roomFilter.GetEntity(idx);
+
+            roomComponent.netFields.ownerID = PhotonNetwork.PlayerList[playerIndex].ActorNumber;
+            NetEntitySyncronizer.instance.EmitUpdate(roomComponent.netFields.ID, new object [] {roomComponent});
 
             roomEntity.Get<Barrack>();
         }

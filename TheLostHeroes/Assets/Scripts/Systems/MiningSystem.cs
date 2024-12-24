@@ -19,9 +19,6 @@ public struct MiningSystem : IEcsRunSystem, IEcsInitSystem
     {
         foreach (var idx in miningFilter)
         {
-            // TODO: проверить что это клик владельца и учесть уровень
-
-            var mineComponent = miningFilter.Get2(idx);
             var roomComponent = miningFilter.Get3(idx);
             if (roomComponent.netFields.ownerID != PhotonNetwork.LocalPlayer.ActorNumber)
                 continue;
