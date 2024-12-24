@@ -4769,6 +4769,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1925230828}
   - component: {fileID: 1925230827}
+  - component: {fileID: 1925230829}
   m_Layer: 0
   m_Name: Input
   m_TagString: Untagged
@@ -4805,6 +4806,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1925230829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1925230826}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24ade0d2a93442545af273ae3cf16da4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  barrackPresets:
+  - {fileID: 804796300008666802, guid: 424e1198278367144b022eb34668d15e, type: 3}
+  minePresets:
+  - {fileID: 2102736765017207182, guid: 92c5160764834424bb87546b0b2e2ea4, type: 3}
+  tavernPresets:
+  - {fileID: 1565905912692351986, guid: 823d1838c46133343b5f0677a7992559, type: 3}
 --- !u!1 &1952806132
 GameObject:
   m_ObjectHideFlags: 0

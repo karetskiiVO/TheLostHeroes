@@ -39,27 +39,36 @@ public struct RoomInitSystem : IEcsInitSystem {
             NetEntitySyncronizer.instance.EmitUpdate(roomComponent.netFields.ID, new object [] {roomComponent});
 
             roomEntity.Get<Barrack>();
+
+            var roomPreset = RoomPresets.GetBarrack();
+            roomPreset.transform.position = roomComponent.collider.bounds.center;
         }
 
         // оставшиемы комнаты как-нибудь разделим по типам
 
         foreach (var idx in roomFilter) {
             if (playersIndices.Contains(idx)) continue;
-        
+
             ref var roomComponent = ref roomFilter.Get1(idx);
             ref var roomEntity = ref roomFilter.GetEntity(idx);
 
+            GameObject roomPreset = null;
             switch (runtimeData.randomConfiguration.Next(3)) {
             case 0:
+                roomPreset = RoomPresets.GetBarrack();
                 roomEntity.Get<Barrack>();
                 break;
             case 1:
+                roomPreset = RoomPresets.GetMine();
                 roomEntity.Get<Mine>();
                 break;
             case 2:
+                roomPreset = RoomPresets.GetTavern();
                 roomEntity.Get<Tavern>();
                 break;
             }
+
+            roomPreset.transform.position = roomComponent.collider.bounds.center;
         }
     }
 }

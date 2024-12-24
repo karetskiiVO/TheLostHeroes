@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class MoneyTileController : MonoBehaviour {
     float endpoint;
     [SerializeField]float speed = 10;
-    private Text msg = null;
     private Vector3 position;
 
     public void ShowMoney (float duration, Vector2 position, int val) {
