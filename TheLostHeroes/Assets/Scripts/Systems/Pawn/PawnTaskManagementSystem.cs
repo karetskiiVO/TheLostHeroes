@@ -88,11 +88,19 @@ public struct PawnTaskManagementSystem : IEcsRunSystem
 
     public static void FinishTask(ref Task task)
     {
+        EcsEntity entity = NetEntitySyncronizer.GetEntity(task.netFields.ID);
+        if (entity.Has<TaskAttack>())
+        {
+            Room room = NetEntitySyncronizer.MustGetComponent<Room>(task.netFields.targetID);
+            room.netFields.ownerID = task.netFields.ownerID;
+            NetEntitySyncronizer.instance.EmitUpdate(task.netFields.targetID, new object[] { room });
+        }
         foreach (int workerID in task.workers)
         {
             ref var pawn = ref NetEntitySyncronizer.GetEntity(workerID).Get<Pawn>();
             AbandonTaskImpl(ref pawn, ref task);
         }
+
         Debug.LogFormat("task {0} is finished", task.netFields.ID);
         NetEntitySyncronizer.instance.EmitDestroy(task.netFields.ID);
     }

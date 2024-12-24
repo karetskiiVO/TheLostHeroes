@@ -1,5 +1,4 @@
-using System.Diagnostics;
-using System.Numerics;
+using UnityEngine;
 using Leopotam.Ecs;
 using Photon.Pun;
 
@@ -26,8 +25,11 @@ public struct RequestSystem : IEcsRunSystem, IEcsInitSystem
             if (roomComponent.netFields.ownerID != PhotonNetwork.LocalPlayer.ActorNumber)
                 continue;
             if (playerMoney.money >= 1000)
+            {
                 playerMoney.money -= 1000;
-            else UnityEngine.Debug.Log("Нужно больше золота...");
+                makePawn(roomComponent.netFields.ownerID, 1, new Vector2(roomComponent.netFields.posx, roomComponent.netFields.posy));
+            }
+            else Debug.Log("Нужно больше золота...");
         }
         foreach (var idx in upgradeFilter)
         {
@@ -36,7 +38,7 @@ public struct RequestSystem : IEcsRunSystem, IEcsInitSystem
 
     }
 
-    public static void makePawn(int owner, int level, UnityEngine.Vector2 pos)
+    public static void makePawn(int owner, int level, Vector2 pos)
     {
         // TODO: учесть уровень
         var pawn = new Pawn();

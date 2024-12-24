@@ -96,7 +96,6 @@ public class NetEntitySyncronizer : MonoBehaviour
         {
             Pawn pawn = (Pawn)(object)comp;
             pawn.self.transform.position = new Vector3(pawn.netFields.x, pawn.netFields.y);
-            Debug.Log(pawn.self.transform.position);
             PawnNavigationAgent.UpdateTarget(pawn);
         }
     }

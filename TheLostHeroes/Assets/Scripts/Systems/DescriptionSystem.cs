@@ -36,6 +36,9 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem
             {
                 string name = "";
                 var descriptionWriter = new StringWriter();
+                string description = "";
+                int myId = beholdedEntity.Get<Room>().netFields.ID;
+
                 var actionButtons = new List<DescriberBehavour.IActionButton>();
                 
                 var ownerNumber = beholdedEntity.Get<Room>().netFields.ownerID;
@@ -54,7 +57,7 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem
                         actionButtons.Add(
                             new DescriberBehavour.SimpleActionButton("Recruit", delegate
                             {
-                                EcsEntity self = NetEntitySyncronizer.GetEntity(id);
+                                EcsEntity self = NetEntitySyncronizer.GetEntity(myId);
                                 self.Get<RecruitRequest>();
                             })
                         );
@@ -73,7 +76,7 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem
                     actionButtons.Add(
                         new DescriberBehavour.SimpleActionButton("Upgrade", delegate
                         {
-                            EcsEntity self = NetEntitySyncronizer.GetEntity(id);
+                            EcsEntity self = NetEntitySyncronizer.GetEntity(myId);
                             self.Get<UpgradeRequest>();
                         })
                     );
