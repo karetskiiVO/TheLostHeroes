@@ -25,13 +25,13 @@ public class ECS : MonoBehaviour
 
         systems
             .Add(new WorldInitSystem())
-            .Add(new WorldGenSystem());
+            .Add(new WorldGenSystem())
+            .Add(new RoomInitSystem());
 
 
         if (PhotonNetwork.IsMasterClient)
             systems
             .Add(new NetworkedUpdateSystem())
-            .Add(new RoomInitSystem())
             .Add(new MasterInitSystem());
 
         systems
