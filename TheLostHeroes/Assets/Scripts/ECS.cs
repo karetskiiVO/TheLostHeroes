@@ -31,6 +31,7 @@ public class ECS : MonoBehaviour
 
         if (PhotonNetwork.IsMasterClient)
             systems
+            .Add(new NetworkedUpdateSystem())
             .Add(new RoomInitSystem())
             .Add(new MasterInitSystem());
 
@@ -55,6 +56,7 @@ public class ECS : MonoBehaviour
             .OneFrame<PlayerClick>()
             .OneFrame<RecruitRequest>()
             .OneFrame<UpgradeRequest>()
+            .OneFrame<NewFrame>()
 
             .Inject(configuration)
             .Inject(sceneData)

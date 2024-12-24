@@ -11,6 +11,8 @@ using Photon.Pun;
 using System;
 using ExitGames.Client.Photon;
 
+public struct NewFrame : IEcsIgnoreInFilter { }
+
 public class NetEntitySyncronizer : MonoBehaviour
 {
     public int nextID;
@@ -65,6 +67,7 @@ public class NetEntitySyncronizer : MonoBehaviour
             Pawn pawn = (Pawn)(object)comp;
             var pawnObject = Instantiate(staticData.pawnPrefab, new Vector3(pawn.netFields.x, pawn.netFields.y, -1), Quaternion.identity);
             pawnObject.GetComponent<NetIDHolder>().ID = id;
+            pawnObject.transform.GetChild(0).GetComponent<SpriteRenderer>().color = StaticData.GetColor(pawn.netFields.ownerID);
             pawn.self = pawnObject;
             PawnNavigationAgent.Initialize(pawn);
             comp = (T)(object)pawn;
@@ -90,7 +93,7 @@ public class NetEntitySyncronizer : MonoBehaviour
     public void updateComponent<T>(EcsEntity entity, object component) where T : struct
     {
         ref T comp = ref entity.Get<T>();
-        object newComp = (T)component;
+        object newComp = component;
         typeof(T).GetField("netFields").SetValueDirect(__makeref(comp), typeof(T).GetField("netFields").GetValue(newComp));
         if (comp.GetType() == typeof(Pawn))
         {
@@ -186,5 +189,13 @@ public class NetEntitySyncronizer : MonoBehaviour
             typeof(NetEntitySyncronizer).GetMethod("addTag").MakeGenericMethod(tags[i].GetType()).Invoke(this, new object[] { entity });
         }
 
+    }
+
+    [PunRPC]
+    public void Updated()
+    {
+        Debug.Log("tick");
+        EcsEntity e = ecsWorld.NewEntity();
+        e.Get<NewFrame>();
     }
 }

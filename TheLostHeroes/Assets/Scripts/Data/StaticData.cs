@@ -26,6 +26,7 @@ public class StaticData : ScriptableObject
     {
         switch (colorChoice)
         {
+            case -1: return Color.white;
             case 0: return Color.red;
             case 1: return Color.green;
             case 2: return Color.blue;
