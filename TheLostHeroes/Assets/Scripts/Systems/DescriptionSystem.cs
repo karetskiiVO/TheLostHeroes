@@ -3,7 +3,8 @@ using System.IO;
 using Leopotam.Ecs;
 using UnityEngine;
 
-public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
+public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem
+{
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
     private StaticData staticData;      // подтягивается из Inject
     private RuntimeData runtimeData;    // подтягивается из Inject
@@ -12,45 +13,61 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
 
     private DescriberBehavour prevDescriber;
 
-    public void Init () {
+    public void Init()
+    {
         prevDescriber = null;
     }
-    
+
     // TODO: добавить в описание игрока-владельца
     // TODO: добавить описание системы опыта
-    public void Run () {
+    public void Run()
+    {
         bool updated = false;
 
-        foreach (var id in filter) {
+        foreach (var id in filter)
+        {
             ref var beholdedEntity = ref filter.GetEntity(id);
             ref var beholder = ref filter.Get1(id);
-            
-            if (beholdedEntity.Has<Room>()) {
+
+            if (beholdedEntity.Has<Room>())
+            {
                 string name = "";
                 string description = "";
 
                 var actionButtons = new List<DescriberBehavour.IActionButton>();
-                if (beholdedEntity.Has<Barrack>()) {
+                if (beholdedEntity.Has<Barrack>())
+                {
                     name = "Barrack";
                     description = "Two hundred thousand units are ready, and a million are on the way.";
 
                     actionButtons.Add(
-                        new DescriberBehavour.SimpleActionButton("Recruit", delegate { /* TODO: повесить компонент upgrdable и обработать его */} )
+                        new DescriberBehavour.SimpleActionButton("Recruit", delegate
+                        {
+                            EcsEntity self = NetEntitySyncronizer.GetEntity(id);
+                            self.Get<RecruitRequest>();
+                        })
                     );
-                } 
-                else if (beholdedEntity.Has<Tavern>()) {
+                }
+                else if (beholdedEntity.Has<Tavern>())
+                {
                     name = "Tavern";
                     description = "Будь как дома, путник";
                 }
-                else if (beholdedEntity.Has<Mine>()) {
+                else if (beholdedEntity.Has<Mine>())
+                {
                     name = "Mine";
                     description = "Eins, zwei, drei, vier, fünf, sechs, sieben, acht, neun, aus";
                 }
                 actionButtons.Add(
-                    new DescriberBehavour.SimpleActionButton("Upgrade", delegate { /* TODO: повесить компонент upgrdable и обработать его */} )
+                    new DescriberBehavour.SimpleActionButton("Upgrade", delegate
+                    {
+                        EcsEntity self = NetEntitySyncronizer.GetEntity(id);
+                        self.Get<UpgradeRequest>();
+                    })
                 );
 
-                beholder.describer.SetDescription(new DescriberBehavour.Description{
+                beholder.describer.SetDescription(new DescriberBehavour.Description
+                {
                     entityName = name,
                     entityDescription = description,
                     actionButtons = actionButtons.ToArray(),
@@ -135,11 +152,13 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem {
             break;
         }
 
-        if (!updated) {
-            prevDescriber?.SetDescription(new DescriberBehavour.Description{
+        if (!updated)
+        {
+            prevDescriber?.SetDescription(new DescriberBehavour.Description
+            {
                 entityName = "The emptiness of the dungeon",
                 entityDescription = "There was something here once, but the passage of time is merciless to all things.",
-                actionButtons = new DescriberBehavour.IActionButton[] {},
+                actionButtons = new DescriberBehavour.IActionButton[] { },
             });
         }
     }

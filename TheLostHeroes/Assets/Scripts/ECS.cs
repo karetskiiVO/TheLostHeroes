@@ -26,22 +26,24 @@ public class ECS : MonoBehaviour
 
         systems
             .Add(new WorldInitSystem())
-            .Add(new WorldGenSystem())
-            .Add(new RoomInitSystem());
+            .Add(new WorldGenSystem());
 
-        if (PhotonNetwork.IsMasterClient) 
+
+        if (PhotonNetwork.IsMasterClient)
             systems
+            .Add(new RoomInitSystem())
             .Add(new MasterInitSystem());
 
         systems
             .Add(new PawnMoveSystem());
 
-        if (PhotonNetwork.IsMasterClient) 
+        if (PhotonNetwork.IsMasterClient)
             systems
-            .Add(new PawnTaskManagementSystem());
+            .Add(new PawnTaskManagementSystem())
+            .Add(new PawnFinishGoSystem());
 
         systems
-            .Add(new PawnFinishGoSystem())
+            .Add(new RequestSystem())
             .Add(new PawnAttackSystem())
             .Add(new PawnWorkSystem())
             .Add(new PawnDefendSystem())
@@ -51,6 +53,8 @@ public class ECS : MonoBehaviour
             .Add(new MiningSystem())
 
             .OneFrame<PlayerClick>()
+            .OneFrame<RecruitRequest>()
+            .OneFrame<UpgradeRequest>()
 
             .Inject(configuration)
             .Inject(sceneData)

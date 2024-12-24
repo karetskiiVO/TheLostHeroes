@@ -44,6 +44,7 @@ public class NetEntitySyncronizer : MonoBehaviour
     {
         instance = this;
         NetEntitySerializer.Register();
+        nextID = PhotonNetwork.LocalPlayer.ActorNumber * 1000;
     }
 
     public void addComponent<T>(EcsEntity entity, object component, int id) where T : struct
@@ -71,7 +72,7 @@ public class NetEntitySyncronizer : MonoBehaviour
         if (comp.GetType() == typeof(Task))
         {
             Task task = (Task)(object)comp;
-            Room room = MustGetComponent<Room>(task.netFields.targetID);
+
             var pos = new Vector3(
                 task.netFields.x,
                 task.netFields.y,
@@ -81,6 +82,7 @@ public class NetEntitySyncronizer : MonoBehaviour
             taskObject.GetComponent<NetIDHolder>().ID = id;
             taskObject.GetComponent<SpriteRenderer>().color = StaticData.GetColor(task.netFields.ownerID);
             task.instance = taskObject.GetComponent<NetIDHolder>();
+            task.workers = new List<int>();
             comp = (T)(object)task;
         }
     }
@@ -88,12 +90,13 @@ public class NetEntitySyncronizer : MonoBehaviour
     public void updateComponent<T>(EcsEntity entity, object component) where T : struct
     {
         ref T comp = ref entity.Get<T>();
-        T newComp = (T)component;
-        typeof(T).GetField("netFields").SetValue(comp, typeof(T).GetField("netFields").GetValue(newComp));
+        object newComp = (T)component;
+        typeof(T).GetField("netFields").SetValueDirect(__makeref(comp), typeof(T).GetField("netFields").GetValue(newComp));
         if (comp.GetType() == typeof(Pawn))
         {
             Pawn pawn = (Pawn)(object)comp;
             pawn.self.transform.position = new Vector3(pawn.netFields.x, pawn.netFields.y);
+            Debug.Log(pawn.self.transform.position);
             PawnNavigationAgent.UpdateTarget(pawn);
         }
     }

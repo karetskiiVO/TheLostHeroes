@@ -1,2 +1,2 @@
 [System.Serializable]
-public struct Barrack {}
+public struct Barrack { }
