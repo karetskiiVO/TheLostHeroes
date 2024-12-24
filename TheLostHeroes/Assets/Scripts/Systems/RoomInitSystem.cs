@@ -3,14 +3,18 @@ using UnityEngine;
 using Leopotam.Ecs;
 using Photon.Pun;
 
-public struct RoomInitSystem : IEcsRunSystem {
+public struct RoomInitSystem : IEcsRunSystem, IEcsInitSystem {
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
     private StaticData staticData;      // подтягивается из Inject
     private RuntimeData runtimeData;    // подтягивается из Inject
     
     EcsFilter<Room> roomFilter;
 
-    static bool initiaised = false;
+    bool initiaised;
+
+    public void Init () {
+        initiaised = false;
+    }
 
     public void Run () {
         if (initiaised) return;

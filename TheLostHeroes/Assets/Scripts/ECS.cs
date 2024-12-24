@@ -51,6 +51,7 @@ public class ECS : MonoBehaviour
             .Add(new MiningSystem())
             
             .Add(new RoomInitSystem())
+            .Add(new WinSystem())
 
             .OneFrame<PlayerClick>()
             .OneFrame<RecruitRequest>()
