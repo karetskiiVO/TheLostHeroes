@@ -25,9 +25,7 @@ public class ECS : MonoBehaviour
 
         systems
             .Add(new WorldInitSystem())
-            .Add(new WorldGenSystem())
-            .Add(new RoomInitSystem());
-
+            .Add(new WorldGenSystem());
 
         if (PhotonNetwork.IsMasterClient)
             systems
@@ -51,6 +49,8 @@ public class ECS : MonoBehaviour
 
             .Add(new DescriptionSystem())
             .Add(new MiningSystem())
+            
+            .Add(new RoomInitSystem())
 
             .OneFrame<PlayerClick>()
             .OneFrame<RecruitRequest>()

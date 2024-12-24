@@ -3,34 +3,40 @@ using UnityEngine;
 using Leopotam.Ecs;
 using Photon.Pun;
 
-public struct RoomInitSystem : IEcsInitSystem {
+public struct RoomInitSystem : IEcsRunSystem {
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
     private StaticData staticData;      // подтягивается из Inject
     private RuntimeData runtimeData;    // подтягивается из Inject
     
     EcsFilter<Room> roomFilter;
 
-    public void Init () {
+    static bool initiaised = false;
+
+    public void Run () {
+        if (initiaised) return;
+
         var roomIndices = new List<int>();
 
         foreach (var idx in roomFilter) {
             roomIndices.Add(idx);
         }
 
+        if (roomIndices.Count == 0) return;
+
         // заспавним три казармы и раздазим их игрокам
 
         int playersCnt = PhotonNetwork.PlayerList.Length;
-        Debug.Log("ДЛЯ RoomInitSystem ВВЕСТИ НОРМАЛЬНОЕ КОЛИЧЕСТВО");
 
         var playersIndices = new List<int>();
         while (playersIndices.Count != playersCnt) {
-            var idx = roomIndices[runtimeData.randomConfiguration.Next(roomIndices.Count)];
+            var buf = runtimeData.randomConfiguration.Next(roomIndices.Count);
+            Debug.Log(roomIndices.Count);
+            var idx = roomIndices[buf];
             
             if (!playersIndices.Contains(idx)) playersIndices.Add(idx);
         }
 
         for (var playerIndex = 0; playerIndex < playersIndices.Count; playerIndex++) {
-            // TODO: выставить id игроков, синхронизироваться по сети
             var idx = roomIndices[playersIndices[playerIndex]];
             ref var roomComponent = ref roomFilter.Get1(idx);
             ref var roomEntity = ref roomFilter.GetEntity(idx);
@@ -70,5 +76,7 @@ public struct RoomInitSystem : IEcsInitSystem {
 
             roomPreset.transform.position = roomComponent.collider.bounds.center;
         }
+
+        initiaised = true;
     }
 }
