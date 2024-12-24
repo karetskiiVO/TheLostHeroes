@@ -36,7 +36,6 @@ public struct DescriptionSystem : IEcsRunSystem, IEcsInitSystem
             {
                 string name = "";
                 var descriptionWriter = new StringWriter();
-                string description = "";
                 int myId = beholdedEntity.Get<Room>().netFields.ID;
 
                 var actionButtons = new List<DescriberBehavour.IActionButton>();

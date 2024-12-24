@@ -15,6 +15,4 @@ public struct RuntimeData
     public List<EcsEntity> rooms;
     public RandomConfiguration randomConfiguration;
     public EmptyClickable defaultClickableBehavour;
-
-    public PlayerMoney playerMoney;
 }

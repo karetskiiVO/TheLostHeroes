@@ -2,7 +2,7 @@ using UnityEngine;
 using Leopotam.Ecs;
 using Photon.Pun;
 
-public struct RequestSystem : IEcsRunSystem, IEcsInitSystem
+public struct RequestSystem : IEcsRunSystem
 {
     private EcsWorld ecsWorld;          // подтягивается автоматически, так как наследует EcsWorld
     private StaticData staticData;      // подтягивается из Inject
@@ -10,12 +10,6 @@ public struct RequestSystem : IEcsRunSystem, IEcsInitSystem
 
     private EcsFilter<RecruitRequest, Barrack, Room> recruitFilter;
     private EcsFilter<UpgradeRequest, Room> upgradeFilter;
-    private PlayerMoney playerMoney;
-
-    public void Init()
-    {
-        playerMoney = runtimeData.playerMoney;
-    }
 
     public void Run()
     {
@@ -24,9 +18,8 @@ public struct RequestSystem : IEcsRunSystem, IEcsInitSystem
             var roomComponent = recruitFilter.Get3(idx);
             if (roomComponent.netFields.ownerID != PhotonNetwork.LocalPlayer.ActorNumber)
                 continue;
-            if (playerMoney.money >= 1000)
+            if (MoneyCounter.StaticDecreaseIfHas(220))
             {
-                playerMoney.money -= 1000;
                 makePawn(roomComponent.netFields.ownerID, 1, new Vector2(roomComponent.netFields.posx, roomComponent.netFields.posy));
             }
             else Debug.Log("Нужно больше золота...");
