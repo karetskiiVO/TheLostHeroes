@@ -1,10 +1,6 @@
 using System;
 using System.Text;
 
-public class PlayerMoney {
-    public int money = 0;
-}
-
 public class RandomConfiguration {
     private readonly Random randomDevice;
     readonly string seed;

@@ -14,12 +14,12 @@ public struct MasterInitSystem : IEcsInitSystem
     EcsFilter<Room> roomFilter;
     public void Init()
     {
-        foreach (int i in roomFilter)
-        {
-            ref EcsEntity entity = ref roomFilter.GetEntity(i);
-            ref Room room = ref roomFilter.Get1(i);
+        // foreach (int i in roomFilter)
+        // {
+        //     ref EcsEntity entity = ref roomFilter.GetEntity(i);
+        //     ref Room room = ref roomFilter.Get1(i);
 
-            RequestSystem.makePawn(-1, 1, new Vector2(room.netFields.posx, room.netFields.posy));
-        }
+        //     RequestSystem.makePawn(-1, 1, new Vector2(room.netFields.posx, room.netFields.posy));
+        // }
     }
 }

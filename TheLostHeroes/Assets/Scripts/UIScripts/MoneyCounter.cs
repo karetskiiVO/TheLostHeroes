@@ -5,25 +5,73 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class MoneyCounter : MonoBehaviour {
-    private PlayerMoney playerMoney = null;
-    int prevValue = 0;
+    private int playerMoney = 100;
+    bool updated = true;
     private Text text = null;
+    static MoneyCounter instance = null;
 
-    void Start () {
+    static Queue<MoneyTileController> moneyCounters = new Queue<MoneyTileController>();
+
+    [SerializeField]GameObject moneyTileExemplar;
+
+    private MoneyTileController NewMoneyTile () {
+        var newMoneyTile = GameObject.Instantiate(moneyTileExemplar, transform.parent.transform);
+        var moneyTileController = newMoneyTile.GetComponent<MoneyTileController>();
+        newMoneyTile.SetActive(false);
+
+        return moneyTileController;
+    }
+
+    private void Start () {
         text = GetComponent<Text>();
+        instance = this;
+
+        moneyCounters.Enqueue(NewMoneyTile());
+    }
+
+    public static bool StaticDecreaseIfHas (int val) {
+        if (instance == null) {
+            return false;
+        }
+
+        return instance.DecreaseIfHas(val);
+    }
+
+    public bool DecreaseIfHas (int val) {
+        if (playerMoney >= val) {
+            playerMoney -= val;
+            updated = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    public static void AddMoney (int val, Vector2 position) {
+        if (instance == null) return;
+
+        MoneyTileController moneyTile = null;
+
+        if (moneyCounters.Peek().gameObject.activeSelf) {
+            moneyTile = moneyCounters.Dequeue();
+        } else {
+            moneyTile = instance.NewMoneyTile();
+        }
+        moneyTile.ShowMoney(Random.Range(0.5f, 1f), position, val);
+        moneyCounters.Enqueue(moneyTile);
+
+
+        instance.playerMoney += val;
+        instance.updated = true;
     }
 
     private void Update () {
-        playerMoney ??= GameObject.Find("ECS").GetComponent<ECS>().runtimeData.playerMoney;
+        if (!updated) return;
 
-        if (playerMoney.money != prevValue) {
-            prevValue = playerMoney.money;
-
-            if (prevValue < 800) {
-                text.text = " Coins: " + prevValue.ToString();
-            } else {
-                text.text = " Coins: " + (prevValue / 1000).ToString() + "k" + (prevValue % 1000 / 100).ToString();
-            }
+        if (playerMoney < 800) {
+            text.text = " Coins: " + playerMoney.ToString();
+        } else {
+            text.text = " Coins: " + (playerMoney / 1000).ToString() + "k" + (playerMoney % 1000 / 100).ToString();
         }
     }
 }

@@ -19,7 +19,6 @@ public class ECS : MonoBehaviour
         systems = new EcsSystems(ecsWorld);
         runtimeData = new RuntimeData
         {
-            playerMoney = new(),
             randomConfiguration = new RandomConfiguration(sceneData.seed),
             defaultClickableBehavour = GetComponent<EmptyClickable>()
         };
@@ -28,10 +27,9 @@ public class ECS : MonoBehaviour
             .Add(new WorldInitSystem())
             .Add(new WorldGenSystem());
 
-
         if (PhotonNetwork.IsMasterClient)
             systems
-            .Add(new RoomInitSystem())
+            .Add(new NetworkedUpdateSystem())
             .Add(new MasterInitSystem());
 
         systems
@@ -51,10 +49,14 @@ public class ECS : MonoBehaviour
 
             .Add(new DescriptionSystem())
             .Add(new MiningSystem())
+            
+            .Add(new RoomInitSystem())
+            .Add(new WinSystem())
 
             .OneFrame<PlayerClick>()
             .OneFrame<RecruitRequest>()
             .OneFrame<UpgradeRequest>()
+            .OneFrame<NewFrame>()
 
             .Inject(configuration)
             .Inject(sceneData)
