@@ -9,6 +9,7 @@ public class ECS : MonoBehaviour
 {
     public StaticData configuration;
     public SceneData sceneData;
+    public RuntimeData runtimeData;
     private EcsWorld ecsWorld;
     private EcsSystems systems;
 
@@ -16,49 +17,46 @@ public class ECS : MonoBehaviour
     {
         ecsWorld = new EcsWorld();
         systems = new EcsSystems(ecsWorld);
-        RuntimeData runtimeData = new RuntimeData
+        runtimeData = new RuntimeData
         {
+            playerMoney = new(),
             randomConfiguration = new RandomConfiguration(sceneData.seed),
             defaultClickableBehavour = GetComponent<EmptyClickable>()
         };
 
-        if (PhotonNetwork.IsMasterClient)
-        {
+        systems
+            .Add(new WorldInitSystem())
+            .Add(new WorldGenSystem())
+            .Add(new RoomInitSystem());
+
+        if (PhotonNetwork.IsMasterClient) 
             systems
-                .Add(new WorldInitSystem())
-                .Add(new WorldGenSystem())
-                .Add(new MasterInitSystem())
-                .Add(new PawnMoveSystem())
-                .Add(new PawnChooseTaskSystem())
-                .Add(new PawnFinishGoSystem())
-                .Add(new PawnAttackSystem())
-                .Add(new PawnWorkSystem())
-                .Add(new PawnDefendSystem())
-                .Add(new MouseClickSystem())
+            .Add(new MasterInitSystem());
 
-                .Inject(configuration)
-                .Inject(sceneData)
-                .Inject(runtimeData)
+        systems
+            .Add(new PawnMoveSystem());
 
-                .Init();
-        }
-        else
-        {
+        if (PhotonNetwork.IsMasterClient) 
             systems
-                .Add(new WorldInitSystem())
-                .Add(new WorldGenSystem())
-                .Add(new PawnMoveSystem())
-                .Add(new MouseClickSystem())
-                .Add(new PawnAttackSystem())
-                .Add(new PawnWorkSystem())
-                .Add(new PawnDefendSystem())
+            .Add(new PawnTaskManagementSystem());
 
-                .Inject(configuration)
-                .Inject(sceneData)
-                .Inject(runtimeData)
+        systems
+            .Add(new PawnFinishGoSystem())
+            .Add(new PawnAttackSystem())
+            .Add(new PawnWorkSystem())
+            .Add(new PawnDefendSystem())
+            .Add(new MouseClickSystem())
 
-                .Init();
-        }
+            .Add(new DescriptionSystem())
+            .Add(new MiningSystem())
+
+            .OneFrame<PlayerClick>()
+
+            .Inject(configuration)
+            .Inject(sceneData)
+            .Inject(runtimeData)
+
+            .Init();
     }
 
 

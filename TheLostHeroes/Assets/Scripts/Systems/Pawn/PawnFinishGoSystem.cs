@@ -23,7 +23,7 @@ public struct PawnFinishGoSystem : IEcsRunSystem
             }
             ref var task = ref NetEntitySyncronizer.MustGetComponent<Task>(pawn.netFields.taskID);
             ref var room = ref NetEntitySyncronizer.MustGetComponent<Room>(task.netFields.targetID);
-            if (room.collider.bounds.Contains(new Vector3(pawn.netFields.x, pawn.netFields.y, room.collider.gameObject.transform.position.z)))
+            if (room.collider.bounds.Contains(new Vector3(pawn.self.transform.position.x, pawn.self.transform.position.y, room.collider.gameObject.transform.position.z)))
             {
                 ReachedTask(ref pawn);
             }
@@ -32,9 +32,12 @@ public struct PawnFinishGoSystem : IEcsRunSystem
 
     public void ReachedTask(ref Pawn pawn)
     {
-        NetEntitySyncronizer.instance.EmitUpdate(pawn.netFields.ID, new object[] { pawn });
+        pawn.netFields.x = pawn.self.transform.position.x;
+        pawn.netFields.y = pawn.self.transform.position.y;
+
         NetEntitySyncronizer.instance.EmitRemoveTags(pawn.netFields.ID, new object[] { new PawnGoing() });
         EcsEntity taskEntity = NetEntitySyncronizer.GetEntity(pawn.netFields.taskID);
+        Debug.LogFormat("pawn {0} reached it's task", pawn.netFields.ID);
         if (taskEntity.Has<TaskAttack>())
         {
             NetEntitySyncronizer.instance.EmitAddTags(pawn.netFields.ID, new object[] { new PawnAttacking() });
@@ -51,5 +54,6 @@ public struct PawnFinishGoSystem : IEcsRunSystem
         {
             throw new System.Exception("task has no specification tag");
         }
+        NetEntitySyncronizer.instance.EmitUpdate(pawn.netFields.ID, new object[] { pawn });
     }
 }
